@@ -6,7 +6,7 @@
 <title>Premium Interactive PhotoBooth Studio Flow</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Dancing+Script:wght@700&family=Parisienne&family=Pinyon+Script&family=Sacramento&family=Orbitron:wght@700&family=Courier+Prime:wght@700&family=Pacifico&family=Fredoka:wght@600&family=Antonio:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=Bangers&family=Courier+Prime:wght@700&family=Dancing+Script:wght@700&family=Fredoka:wght@600&family=Orbitron:wght@700&family=Pacifico&family=Parisienne&family=Pinyon+Script&family=Sacramento&display=swap" rel="stylesheet">
 <style>
 /* KIOSK PREMIUM SYSTEM UI */
 *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
@@ -203,14 +203,14 @@ canvas.main-workspace {
                 <select id="filterDropdown" style="flex:1; padding:10px; background:#22222a; border:1px solid #363644; color:#fff; font-size:12px; border-radius:8px; outline:none;" onchange="syncLiveFilterMode()">
                     <option value="none">🎬 Normal Cam</option>
                     <option value="creamy">🍦 Creamy Soft</option>
-                    <option value="digicam">📸 Digicam Y2K Flash</option>
+                    <option value="cyber">🌆 Cyber Punk Neon</option>
                     <option value="noir">🎬 Dramatic Noir</option>
+                    <option value="digicam">📸 Digicam Y2K Flash</option>
                     <option value="fuji">🎞️ Fuji Classic Chrome</option>
                     <option value="mono">🔲 Mono B&W</option>
-                    <option value="warm">🍁 Warm Retro</option>
-                    <option value="vintage">🎞️ Vintage Sepia</option>
-                    <option value="cyber">🌆 Cyber Punk Neon</option>
                     <option value="cool">❄️ Nordic Ice Cool</option>
+                    <option value="vintage">🎞️ Vintage Sepia</option>
+                    <option value="warm">🍁 Warm Retro</option>
                 </select>
             </div>
             
@@ -264,14 +264,14 @@ canvas.main-workspace {
                             <div class="dropdown-trigger" id="fontDropdownTrigger" onclick="toggleFontDropdownMenu()">📟 Retro Monospace</div>
                             <div class="dropdown-menu-list" id="fontDropdownMenu">
                                 <div class="dropdown-option-item" style="font-family:'Sacramento', cursive;" onclick="selectFontFromCustomMenu(`'Sacramento', cursive`, '🎗️ Aesthetic Ribbon')">🎗️ Aesthetic Ribbon</div>
-                                <div class="dropdown-option-item" style="font-family:'Parisienne', cursive;" onclick="selectFontFromCustomMenu(`'Parisienne', cursive`, '📜 Parisienne Vintage')">📜 Parisienne Vintage</div>
-                                <div class="dropdown-option-item" style="font-family:'Pinyon Script', cursive;" onclick="selectFontFromCustomMenu(`'Pinyon Script', cursive`, '💎 Pinyon Luxury')">💎 Pinyon Luxury</div>
-                                <div class="dropdown-option-item" style="font-family:'Dancing Script', cursive;" onclick="selectFontFromCustomMenu(`'Dancing Script', cursive`, '💃 Dancing Casual')">💃 Dancing Casual</div>
-                                <div class="dropdown-option-item" style="font-family:'Pacifico', cursive;" onclick="selectFontFromCustomMenu(`'Pacifico', cursive`, '🌊 Coastal Pacifico')">🌊 Coastal Pacifico</div>
-                                <div class="dropdown-option-item" style="font-family:'Fredoka', sans-serif;" onclick="selectFontFromCustomMenu(`'Fredoka', sans-serif`, '🧸 Fredoka Cute')">🧸 Fredoka Cute</div>
                                 <div class="dropdown-option-item" style="font-family:'Antonio', sans-serif;" onclick="selectFontFromCustomMenu(`'Antonio', sans-serif`, '🚀 Antonio Impact')">🚀 Antonio Impact</div>
                                 <div class="dropdown-option-item" style="font-family:'Bangers', sans-serif;" onclick="selectFontFromCustomMenu(`'Bangers', sans-serif`, '🦸 Comic Action')">🦸 Comic Action</div>
+                                <div class="dropdown-option-item" style="font-family:'Pacifico', cursive;" onclick="selectFontFromCustomMenu(`'Pacifico', cursive`, '🌊 Coastal Pacifico')">🌊 Coastal Pacifico</div>
                                 <div class="dropdown-option-item" style="font-family:'Orbitron', sans-serif;" onclick="selectFontFromCustomMenu(`'Orbitron', sans-serif`, '👾 Cyber Arcade')">👾 Cyber Arcade</div>
+                                <div class="dropdown-option-item" style="font-family:'Dancing Script', cursive;" onclick="selectFontFromCustomMenu(`'Dancing Script', cursive`, '💃 Dancing Casual')">💃 Dancing Casual</div>
+                                <div class="dropdown-option-item" style="font-family:'Fredoka', sans-serif;" onclick="selectFontFromCustomMenu(`'Fredoka', sans-serif`, '🧸 Fredoka Cute')">🧸 Fredoka Cute</div>
+                                <div class="dropdown-option-item" style="font-family:'Parisienne', cursive;" onclick="selectFontFromCustomMenu(`'Parisienne', cursive`, '📜 Parisienne Vintage')">📜 Parisienne Vintage</div>
+                                <div class="dropdown-option-item" style="font-family:'Pinyon Script', cursive;" onclick="selectFontFromCustomMenu(`'Pinyon Script', cursive`, '💎 Pinyon Luxury')">💎 Pinyon Luxury</div>
                                 <div class="dropdown-option-item" style="font-family:'Courier Prime', monospace;" onclick="selectFontFromCustomMenu(`'Courier Prime', monospace`, '📟 Retro Monospace')">📟 Retro Monospace</div>
                             </div>
                         </div>
@@ -353,6 +353,11 @@ let startDistance = { x: 0, y: 0 };
 let lastTapTime = 0;
 const handleRadius = 9; 
 const rotHandleOffset = 30;
+
+// Alignment indicator state
+let isCenteredX = false;
+let isCenteredY = false;
+const snapThreshold = 8; // Pixels distance to trigger snap/guide lines
 
 const templateRegistry = {
     1: { w: 500, h: 750, label: "Quad Grid", frames: [
@@ -735,6 +740,28 @@ function drawBoothCanvas(targetCtx = ctx, isFinal = false) {
             targetCtx.restore();
         }
     });
+
+    // Draw active alignment lines if dragging and snapped to center axes
+    if (!isFinal && isHoldingObject && activeInteractionType === 'drag') {
+        targetCtx.save();
+        targetCtx.lineWidth = 1;
+        targetCtx.setLineDash([6, 4]);
+        targetCtx.strokeStyle = "#007aff";
+        
+        if (isCenteredX) {
+            targetCtx.beginPath();
+            targetCtx.moveTo(targetCtx.canvas.width / 2, 0);
+            targetCtx.lineTo(targetCtx.canvas.width / 2, targetCtx.canvas.height);
+            targetCtx.stroke();
+        }
+        if (isCenteredY) {
+            targetCtx.beginPath();
+            targetCtx.moveTo(0, targetCtx.canvas.height / 2);
+            targetCtx.lineTo(targetCtx.canvas.width / 2 * 2, targetCtx.canvas.height / 2);
+            targetCtx.stroke();
+        }
+        targetCtx.restore();
+    }
 }
 
 function toggleFontDropdownMenu() { document.getElementById("fontDropdownMenu").classList.toggle("show"); }
@@ -869,7 +896,28 @@ function setupCanvasInteractions() {
         let pos = getMousePos(e), local = toLocalPos(activeTargetObject, pos.x, pos.y);
         
         if (activeInteractionType === 'drag') { 
-            activeTargetObject.x = pos.x; activeTargetObject.y = pos.y; 
+            let targetX = pos.x;
+            let targetY = pos.y;
+            let midX = canvas.width / 2;
+            let midY = canvas.height / 2;
+            
+            // Snap logic & line state checking
+            if (Math.abs(targetX - midX) < snapThreshold) {
+                targetX = midX;
+                isCenteredX = true;
+            } else {
+                isCenteredX = false;
+            }
+            
+            if (Math.abs(targetY - midY) < snapThreshold) {
+                targetY = midY;
+                isCenteredY = true;
+            } else {
+                isCenteredY = false;
+            }
+            
+            activeTargetObject.x = targetX; 
+            activeTargetObject.y = targetY; 
         } 
         else if (activeInteractionType === 'scale') {
             let factor = Math.abs(local.x) / Math.abs(startDistance.x);
@@ -890,8 +938,16 @@ function setupCanvasInteractions() {
         if (e.cancelable) e.preventDefault();
         drawBoothCanvas();
     }
-    canvas.addEventListener("mousedown", onStart); canvas.addEventListener("mousemove", onMove); window.addEventListener("mouseup", () => isHoldingObject = false);
-    canvas.addEventListener("touchstart", onStart, { passive: false }); canvas.addEventListener("touchmove", onMove, { passive: false }); window.addEventListener("touchend", () => isHoldingObject = false);
+    
+    function onEnd() {
+        isHoldingObject = false;
+        isCenteredX = false;
+        isCenteredY = false;
+        drawBoothCanvas();
+    }
+    
+    canvas.addEventListener("mousedown", onStart); canvas.addEventListener("mousemove", onMove); window.addEventListener("mouseup", onEnd);
+    canvas.addEventListener("touchstart", onStart, { passive: false }); canvas.addEventListener("touchmove", onMove, { passive: false }); window.addEventListener("touchend", onEnd);
 }
 
 function renderFinalOutput() { let fCtx = finalCanvas.getContext("2d"); finalCanvas.width = canvas.width; finalCanvas.height = canvas.height; drawBoothCanvas(fCtx, true); }
