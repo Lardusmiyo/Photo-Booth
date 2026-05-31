@@ -6,7 +6,7 @@
 <title>Premium Interactive PhotoBooth Studio Flow</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Caveat:wght@400;700&family=Clicker+Script&family=Courier+Prime:wght@700&family=Creepster&family=Great+Vibes&family=Montserrat:wght@900&family=Orbitron:wght@700&family=Pacifico&family=Playfair+Display:ital,wght@1,700&family=Satisfy&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Dancing+Script:wght@700&family=Parisienne&family=Pinyon+Script&family=Sacramento&family=Orbitron:wght@700&family=Courier+Prime:wght@700&family=Pacifico&family=Fredoka:wght@600&family=Antonio:wght@700&display=swap" rel="stylesheet">
 <style>
 /* KIOSK PREMIUM SYSTEM UI */
 *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
@@ -58,7 +58,6 @@ body{background:#0b0b0d; color:#f4f4f7; padding:12px; min-height:100vh; display:
 .camera-box {
     position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 12px; border: 2px solid #3f3f52;
 }
-/* Hidden video tag because we process frames dynamically */
 #boothVideo { display: none; }
 #livePreviewCanvas { width: 100%; height: 100%; object-fit: cover; display: block; }
 
@@ -124,7 +123,7 @@ canvas.main-workspace {
 }
 .dropdown-menu-list.show { display: block; }
 .dropdown-option-item {
-    padding: 12px 14px; color: #fff; cursor: pointer; font-size: 15px; border-bottom: 1px solid #2d2d3a; transition: background 0.1s; display: block; width: 100%; text-align: left;
+    padding: 12px 14px; color: #fff; cursor: pointer; font-size: 14px; border-bottom: 1px solid #2d2d3a; transition: background 0.1s; display: block; width: 100%; text-align: left;
 }
 .dropdown-option-item:active, .dropdown-option-item:hover { background: #007aff; color: #ffffff !important; }
 
@@ -139,7 +138,7 @@ canvas.main-workspace {
 .sticker-asset-btn { 
     width: 46px; height: 46px; background: #2c2c38; border: 1px solid #3f3f52; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 4px;
 }
-.sticker-asset-btn svg { width: 34px; height: 34px; }
+.sticker-asset-btn svg, .sticker-asset-btn text { width: 34px; height: 34px; text-anchor: middle; dominant-baseline: middle; }
 
 .nav-footer { display: flex; gap: 6px; margin-top: 8px; }
 .btn-nav { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
@@ -185,11 +184,8 @@ canvas.main-workspace {
         <div class="screen-subtitle">Center your subject inside the box guide</div>
         
         <div class="camera-box">
-            <!-- Background mirror processor video -->
             <video id="boothVideo" autoplay playsinline muted></video>
-            <!-- Real-time WebGL/Canvas simulation pipeline monitor -->
             <canvas id="livePreviewCanvas"></canvas>
-            
             <div class="camera-ratio-overlay"><div id="dynamicRatioGuide" class="ratio-guide-box"></div></div>
             <div class="shutter-flash" id="countdownLayer">3</div>
         </div>
@@ -201,6 +197,7 @@ canvas.main-workspace {
                 <select id="timerDropdown" style="flex:1; padding:10px; background:#22222a; border:1px solid #363644; color:#fff; font-size:12px; border-radius:8px; outline:none;">
                     <option value="3">⏱️ 3s Delay</option>
                     <option value="5">⏱️ 5s Delay</option>
+                    <option value="0">⚡ No Delay</option>
                 </select>
                 
                 <select id="filterDropdown" style="flex:1; padding:10px; background:#22222a; border:1px solid #363644; color:#fff; font-size:12px; border-radius:8px; outline:none;" onchange="syncLiveFilterMode()">
@@ -212,18 +209,26 @@ canvas.main-workspace {
                     <option value="mono">🔲 Mono B&W</option>
                     <option value="warm">🍁 Warm Retro</option>
                     <option value="vintage">🎞️ Vintage Sepia</option>
+                    <option value="cyber">🌆 Cyber Punk Neon</option>
+                    <option value="cool">❄️ Nordic Ice Cool</option>
                 </select>
             </div>
             
-            <div style="display:flex; align-items:center; gap:8px; padding:6px; background:#1f1f26; border-radius:8px; border:1px solid #2c2c38;">
-                <input type="checkbox" id="toggleDateStampCheckbox" checked style="width:16px; height:16px; cursor:pointer;">
-                <label for="toggleDateStampCheckbox" style="font-size:11px; color:#a1a1aa; font-weight:700; cursor:pointer;">💡 Add Orange Digicam Date Stamp</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+                <div style="flex:1; display:flex; align-items:center; gap:8px; padding:8px; background:#1f1f26; border-radius:8px; border:1px solid #2c2c38;">
+                    <input type="checkbox" id="toggleDateStampCheckbox" checked style="width:16px; height:16px; cursor:pointer;">
+                    <label for="toggleDateStampCheckbox" style="font-size:11px; color:#a1a1aa; font-weight:700; cursor:pointer;">💡 Date Stamp</label>
+                </div>
+                <div style="flex:1; display:flex; align-items:center; gap:8px; padding:8px; background:#1f1f26; border-radius:8px; border:1px solid #2c2c38;">
+                    <input type="checkbox" id="continuousCaptureCheckbox" style="width:16px; height:16px; cursor:pointer;">
+                    <label for="continuousCaptureCheckbox" style="font-size:11px; color:#007aff; font-weight:700; cursor:pointer;">🔄 Continuous Mode</label>
+                </div>
             </div>
             <button class="btn-nav btn-next" id="shutterTriggerBtn" style="width:100%; background:#007aff; font-size:13px;" onclick="fireCameraCountdown()">📸 Take Photo</button>
         </div>
         
         <div class="nav-footer">
-            <button class="btn-nav btn-back" id="camBackBtn" onclick="navigateToScreen(1)">⬅ Change Layout</button>
+            <button class="btn-nav btn-back" id="camBackBtn" onclick="navigateToScreen(1)">⬅ Layout</button>
             <button class="btn-nav btn-next" id="goToDecorBtn" disabled onclick="navigateToScreen(3)">Next: Decorate ➔</button>
         </div>
     </div>
@@ -231,7 +236,7 @@ canvas.main-workspace {
     <!-- STEP 3 SCREEN -->
     <div class="booth-screen" id="screen-3">
         <h2 class="screen-title">Personalize Frame</h2>
-        <div class="screen-subtitle">Asul: Sulok (Scale) | Lila: Gilid (Stretch) | Berde: Rotate | Double-tap para burahin</div>
+        <div class="screen-subtitle">Asul: Resize | Lila (Gitna): Stretch | Berde: Rotate | Double-tap to delete</div>
         <div class="canvas-scroll-container"><canvas id="boothCanvas" class="main-workspace" width="500" height="750"></canvas></div>
 
         <div class="editing-panel">
@@ -258,9 +263,14 @@ canvas.main-workspace {
                         <div class="custom-dropdown-container" style="flex: 2;">
                             <div class="dropdown-trigger" id="fontDropdownTrigger" onclick="toggleFontDropdownMenu()">📟 Retro Monospace</div>
                             <div class="dropdown-menu-list" id="fontDropdownMenu">
-                                <div class="dropdown-option-item" style="font-family:'Impact', sans-serif;" onclick="selectFontFromCustomMenu(`'Impact', sans-serif`, '💥 Bold Impact')">💥 Bold Impact</div>
+                                <div class="dropdown-option-item" style="font-family:'Sacramento', cursive;" onclick="selectFontFromCustomMenu(`'Sacramento', cursive`, '🎗️ Aesthetic Ribbon')">🎗️ Aesthetic Ribbon</div>
+                                <div class="dropdown-option-item" style="font-family:'Parisienne', cursive;" onclick="selectFontFromCustomMenu(`'Parisienne', cursive`, '📜 Parisienne Vintage')">📜 Parisienne Vintage</div>
+                                <div class="dropdown-option-item" style="font-family:'Pinyon Script', cursive;" onclick="selectFontFromCustomMenu(`'Pinyon Script', cursive`, '💎 Pinyon Luxury')">💎 Pinyon Luxury</div>
+                                <div class="dropdown-option-item" style="font-family:'Dancing Script', cursive;" onclick="selectFontFromCustomMenu(`'Dancing Script', cursive`, '💃 Dancing Casual')">💃 Dancing Casual</div>
+                                <div class="dropdown-option-item" style="font-family:'Pacifico', cursive;" onclick="selectFontFromCustomMenu(`'Pacifico', cursive`, '🌊 Coastal Pacifico')">🌊 Coastal Pacifico</div>
+                                <div class="dropdown-option-item" style="font-family:'Fredoka', sans-serif;" onclick="selectFontFromCustomMenu(`'Fredoka', sans-serif`, '🧸 Fredoka Cute')">🧸 Fredoka Cute</div>
+                                <div class="dropdown-option-item" style="font-family:'Antonio', sans-serif;" onclick="selectFontFromCustomMenu(`'Antonio', sans-serif`, '🚀 Antonio Impact')">🚀 Antonio Impact</div>
                                 <div class="dropdown-option-item" style="font-family:'Bangers', sans-serif;" onclick="selectFontFromCustomMenu(`'Bangers', sans-serif`, '🦸 Comic Action')">🦸 Comic Action</div>
-                                <div class="dropdown-option-item" style="font-family:'Caveat', cursive;" onclick="selectFontFromCustomMenu(`'Caveat', cursive`, '🧸 Cute Handwriting')">🧸 Cute Handwriting</div>
                                 <div class="dropdown-option-item" style="font-family:'Orbitron', sans-serif;" onclick="selectFontFromCustomMenu(`'Orbitron', sans-serif`, '👾 Cyber Arcade')">👾 Cyber Arcade</div>
                                 <div class="dropdown-option-item" style="font-family:'Courier Prime', monospace;" onclick="selectFontFromCustomMenu(`'Courier Prime', monospace`, '📟 Retro Monospace')">📟 Retro Monospace</div>
                             </div>
@@ -280,8 +290,13 @@ canvas.main-workspace {
                     <div class="stickers-shelf">
                         <button class="sticker-asset-btn" onclick="generateVectorSticker('star')"><svg viewBox="0 0 24 24"><path fill="#ffb703" d="M12 1.74l3.19 6.46 7.13 1.04-5.16 5.03 1.22 7.1-6.38-3.36-6.38 3.36 1.22-7.1-5.16-5.03 7.13-1.04z"/></svg></button>
                         <button class="sticker-asset-btn" onclick="generateVectorSticker('heart')"><svg viewBox="0 0 24 24"><path fill="#e63946" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg></button>
-                        <button class="sticker-asset-btn" onclick="generateEmojiSticker('🥑')"><svg viewBox="0 0 32 32"><text x="0" y="26" font-size="26">🥑</text></svg></button>
-                        <button class="sticker-asset-btn" onclick="generateEmojiSticker('🧸')"><svg viewBox="0 0 32 32"><text x="0" y="26" font-size="26">🧸</text></svg></button>
+                        <button class="sticker-asset-btn" onclick="generateVectorSticker('sparkle')"><svg viewBox="0 0 24 24"><path fill="#00f5d4" d="M12 2s1 5 6 6-6 1-6 6-1-5-6-6 5-1 6-6z"/></svg></button>
+                        <button class="sticker-asset-btn" onclick="generateVectorSticker('crown')"><svg viewBox="0 0 24 24"><path fill="#ffe14c" d="M2 22h20v-2H2v2zm3-4h14l2-8-5 4-4-7-4 7-5-4 2 8z"/></svg></button>
+                        <button class="sticker-asset-btn" onclick="generateVectorSticker('butterfly')"><svg viewBox="0 0 24 24"><path fill="#ff70a6" d="M12 8c.5-2 2.5-5 5.5-5 2.5 0 4.5 2 4.5 4.5 0 3-3.5 6.5-10 9.5-6.5-3-10-6.5-10-9.5C2 5 4 3 6.5 3 9.5 3 11.5 6 12 8z"/></svg></button>
+                        <button class="sticker-asset-btn" onclick="generateEmojiSticker('🥑')"><svg viewBox="0 0 32 32"><text x="16" y="22" font-size="22">🥑</text></svg></button>
+                        <button class="sticker-asset-btn" onclick="generateEmojiSticker('🧸')"><svg viewBox="0 0 32 32"><text x="16" y="22" font-size="22">🧸</text></svg></button>
+                        <button class="sticker-asset-btn" onclick="generateEmojiSticker('🎀')"><svg viewBox="0 0 32 32"><text x="16" y="22" font-size="22">🎀</text></svg></button>
+                        <button class="sticker-asset-btn" onclick="generateEmojiSticker('🐈')"><svg viewBox="0 0 32 32"><text x="16" y="22" font-size="22">🐈</text></svg></button>
                     </div>
                 </div>
             </div>
@@ -308,7 +323,6 @@ const canvas = document.getElementById("boothCanvas");
 const ctx = canvas.getContext("2d");
 const finalCanvas = document.getElementById("boothCanvasFinalCopy");
 
-// Real-time Preview Monitor Elements
 const previewCanvas = document.getElementById("livePreviewCanvas");
 const pCtx = previewCanvas.getContext("2d");
 
@@ -333,10 +347,11 @@ let objectStartWidth = 0;
 let objectStartHeight = 0;
 let objectStartX = 0;
 let objectStartY = 0;
-let objectStartFontSize = 36;
+let objectStartScaleX = 1;
+let objectStartScaleY = 1;
 let startDistance = { x: 0, y: 0 }; 
 let lastTapTime = 0;
-const handleRadius = 8; 
+const handleRadius = 9; 
 const rotHandleOffset = 30;
 
 const templateRegistry = {
@@ -443,7 +458,6 @@ function navigateToScreen(stepNum) {
     if (stepNum === 2) { 
         activateUserCameraDevice(); 
     } else {
-        // Stop the live loop if we are not on the camera page to save phone battery
         if (globalAnimationFrameTracker) {
             cancelAnimationFrame(globalAnimationFrameTracker);
             globalAnimationFrameTracker = null;
@@ -469,7 +483,6 @@ function activateUserCameraDevice() {
                 video.srcObject = stream; 
                 video.play(); 
                 isVideoLive = true;
-                // Run the stream injector loop when the metadata initializes
                 video.onloadedmetadata = () => {
                     previewCanvas.width = video.videoWidth;
                     previewCanvas.height = video.videoHeight;
@@ -487,18 +500,15 @@ function syncLiveFilterMode() {
     activeLiveFilterMode = document.getElementById("filterDropdown").value;
 }
 
-// THE LIVE CONSOLE MONITOR INTERCEPTOR (Real-time Pixel Injector Engine)
 function startLivePreviewLoop() {
     if (!isVideoLive || activeStep !== 2) return;
     
     pCtx.save();
-    // Mirror standard camera layout flip
     pCtx.translate(previewCanvas.width, 0);
     pCtx.scale(-1, 1);
     pCtx.drawImage(video, 0, 0, previewCanvas.width, previewCanvas.height);
     pCtx.restore();
 
-    // Live pixel translation pipeline on top of the loop stream
     if (activeLiveFilterMode !== "none") {
         let imgData = pCtx.getImageData(0, 0, previewCanvas.width, previewCanvas.height);
         applyFilterPixelMath(imgData.data, activeLiveFilterMode);
@@ -508,7 +518,6 @@ function startLivePreviewLoop() {
     globalAnimationFrameTracker = requestAnimationFrame(startLivePreviewLoop);
 }
 
-// Isolated Pixel LUT Processor shared between real-time feed and hardware picture isolation
 function applyFilterPixelMath(data, filterType) {
     for (let i = 0; i < data.length; i += 4) {
         let r = data[i], g = data[i+1], b = data[i+2];
@@ -521,11 +530,12 @@ function applyFilterPixelMath(data, filterType) {
             data[i] = Math.min(255, r * 1.2 + 15);
             data[i+1] = Math.min(255, g * 1.2 + 15);
             data[i+2] = Math.min(255, b * 1.1 + 10);
-        } else if (filterType === "noir" || filterType === "mono") {
+        } else if (filterType === "noir") {
             let gray = 0.299 * r + 0.587 * g + 0.114 * b;
-            if (filterType === "noir") {
-                gray = gray > 128 ? Math.min(255, gray * 1.3) : gray * 0.7;
-            }
+            gray = gray > 128 ? Math.min(255, gray * 1.4) : gray * 0.6;
+            data[i] = data[i+1] = data[i+2] = gray;
+        } else if (filterType === "mono") {
+            let gray = 0.299 * r + 0.587 * g + 0.114 * b;
             data[i] = data[i+1] = data[i+2] = gray;
         } else if (filterType === "fuji") {
             data[i] = Math.min(255, r * 1.05);
@@ -539,6 +549,14 @@ function applyFilterPixelMath(data, filterType) {
             data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
             data[i+1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
             data[i+2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
+        } else if (filterType === "cyber") {
+            data[i] = Math.min(255, r * 1.3);
+            data[i+1] = Math.min(255, g * 0.8);
+            data[i+2] = Math.min(255, b * 1.4 + 20);
+        } else if (filterType === "cool") {
+            data[i] = Math.min(255, r * 0.85);
+            data[i+1] = Math.min(255, g * 1.05);
+            data[i+2] = Math.min(255, b * 1.25 + 10);
         }
     }
 }
@@ -582,43 +600,58 @@ function fireCameraCountdown() {
     const triggerBtn = document.getElementById("shutterTriggerBtn");
     const layer = document.getElementById("countdownLayer");
     const duration = parseInt(document.getElementById("timerDropdown").value, 10);
+    const isContinuous = document.getElementById("continuousCaptureCheckbox").checked;
     
     triggerBtn.disabled = true;
     let nextEmpty = currentFrameStructure.find(f => f.image === null);
     if (!nextEmpty) return;
 
     let timeRemains = duration;
-    layer.className = "shutter-flash counting"; layer.innerText = timeRemains;
     
-    const timerTick = setInterval(() => {
-        timeRemains--;
-        if (timeRemains > 0) { layer.innerText = timeRemains; } 
-        else {
-            clearInterval(timerTick);
-            layer.className = "shutter-flash flash-burst"; layer.innerText = "";
-            
-            let chosenFilter = document.getElementById("filterDropdown").value;
-            let shouldAddDate = document.getElementById("toggleDateStampCheckbox").checked;
-            
-            isolatePhotoFromActiveCanvasFrame(nextEmpty.id, chosenFilter, shouldAddDate);
-            
-            setTimeout(() => { 
-                layer.className = "shutter-flash"; 
-                checkCameraSlotStatus(); 
-            }, 400);
-        }
-    }, 1000);
+    if (timeRemains === 0) {
+        executeShutterCaptureAction(nextEmpty, isContinuous);
+    } else {
+        layer.className = "shutter-flash counting"; layer.innerText = timeRemains;
+        const timerTick = setInterval(() => {
+            timeRemains--;
+            if (timeRemains > 0) { layer.innerText = timeRemains; } 
+            else {
+                clearInterval(timerTick);
+                executeShutterCaptureAction(nextEmpty, isContinuous);
+            }
+        }, 1000);
+    }
 }
 
-// Instantly captures exactly what you see live on the monitor stage right now
-function isolatePhotoFromActiveCanvasFrame(slotId, filterType, shouldAddDate) {
+function executeShutterCaptureAction(targetSlot, isContinuous) {
+    const layer = document.getElementById("countdownLayer");
+    layer.className = "shutter-flash flash-burst"; layer.innerText = "";
+    
+    let chosenFilter = document.getElementById("filterDropdown").value;
+    let shouldAddDate = document.getElementById("toggleDateStampCheckbox").checked;
+    
+    isolatePhotoFromActiveCanvasFrame(targetSlot.id, chosenFilter, shouldAddDate, () => {
+        setTimeout(() => { 
+            layer.className = "shutter-flash"; 
+            checkCameraSlotStatus(); 
+            
+            if (isContinuous) {
+                let nextSlot = currentFrameStructure.find(f => f.image === null);
+                if (nextSlot) {
+                    setTimeout(() => { fireCameraCountdown(); }, 800);
+                }
+            }
+        }, 400);
+    });
+}
+
+function isolatePhotoFromActiveCanvasFrame(slotId, filterType, shouldAddDate, callback) {
     const snapCanvas = document.createElement("canvas");
     const sCtx = snapCanvas.getContext("2d");
     
     snapCanvas.width = previewCanvas.width;
     snapCanvas.height = previewCanvas.height;
     
-    // Direct hardware frame capture clone
     sCtx.drawImage(previewCanvas, 0, 0);
 
     if (shouldAddDate) {
@@ -633,7 +666,7 @@ function isolatePhotoFromActiveCanvasFrame(slotId, filterType, shouldAddDate) {
     imgObj.onload = () => {
         let slotToFill = currentFrameStructure.find(f => f.id === slotId);
         if (slotToFill) slotToFill.image = imgObj;
-        checkCameraSlotStatus();
+        if (callback) callback();
     };
     imgObj.src = snapCanvas.toDataURL("image/png");
 }
@@ -659,9 +692,13 @@ function drawBoothCanvas(targetCtx = ctx, isFinal = false) {
     });
 
     stageObjects.forEach(obj => {
-        targetCtx.save(); targetCtx.translate(obj.x, obj.y); targetCtx.rotate(obj.angle);
+        targetCtx.save(); 
+        targetCtx.translate(obj.x, obj.y); 
+        targetCtx.rotate(obj.angle);
+        targetCtx.scale(obj.scaleX || 1, obj.scaleY || 1);
+        
         if (obj.type === 'text') {
-            targetCtx.font = `${obj.fontSize}px ${obj.fontFamily}`; targetCtx.fillStyle = obj.color;
+            targetCtx.font = `bold ${obj.fontSize}px ${obj.fontFamily}`; targetCtx.fillStyle = obj.color;
             targetCtx.textAlign = "center"; targetCtx.textBaseline = "middle"; targetCtx.fillText(obj.text, 0, 0);
         } else if (obj.type === 'sticker' && obj.img) {
             targetCtx.drawImage(obj.img, -obj.w/2, -obj.h/2, obj.w, obj.h);
@@ -669,13 +706,32 @@ function drawBoothCanvas(targetCtx = ctx, isFinal = false) {
         targetCtx.restore();
         
         if (!isFinal && obj === activeTargetObject) {
-            targetCtx.save(); targetCtx.translate(obj.x, obj.y); targetCtx.rotate(obj.angle);
-            targetCtx.strokeStyle = "#007aff"; targetCtx.lineWidth = 2; targetCtx.strokeRect(-obj.w/2, -obj.h/2, obj.w, obj.h);
+            targetCtx.save(); 
+            targetCtx.translate(obj.x, obj.y); 
+            targetCtx.rotate(obj.angle);
+            
+            let displayW = obj.w * (obj.scaleX || 1);
+            let displayH = obj.h * (obj.scaleY || 1);
+            
+            targetCtx.strokeStyle = "#007aff"; targetCtx.lineWidth = 1.5; 
+            targetCtx.strokeRect(-displayW/2, -displayH/2, displayW, displayH);
+            
+            // 1. ASUL CIRCLES: Proportional Uniform scaling
             targetCtx.fillStyle = "#007aff";
-            [{x:-obj.w/2, y:-obj.h/2}, {x:obj.w/2, y:-obj.h/2}, {x:-obj.w/2, y:obj.h/2}, {x:obj.w/2, y:obj.h/2}].forEach(c => {
-                targetCtx.beginPath(); targetCtx.arc(c.x, c.y, handleRadius, 0, Math.PI*2); targetCtx.fill();
-            });
-            targetCtx.fillStyle = "#34c759"; targetCtx.beginPath(); targetCtx.arc(0, -obj.h/2 - rotHandleOffset, handleRadius, 0, Math.PI*2); targetCtx.fill();
+            targetCtx.beginPath(); targetCtx.arc(-displayW/2, -displayH/2, handleRadius, 0, Math.PI*2); targetCtx.fill();
+            targetCtx.beginPath(); targetCtx.arc(-displayW/2, displayH/2, handleRadius, 0, Math.PI*2); targetCtx.fill();
+            targetCtx.beginPath(); targetCtx.arc(displayW/2, -displayH/2, handleRadius, 0, Math.PI*2); targetCtx.fill();
+            targetCtx.beginPath(); targetCtx.arc(displayW/2, displayH/2, handleRadius, 0, Math.PI*2); targetCtx.fill();
+
+            // 2. LILA RECTANGLES (MIDDLE SIDES): Non-proportional pure directional stretching
+            targetCtx.fillStyle = "#da00f7";
+            targetCtx.fillRect(displayW/2 - 5, -6, 10, 12);
+            targetCtx.fillRect(-displayW/2 - 5, -6, 10, 12);
+            targetCtx.fillRect(-6, -displayH/2 - 5, 12, 10);
+            targetCtx.fillRect(-6, displayH/2 - 5, 12, 10);
+
+            // 3. BERDE CIRCLE: Rotation pin
+            targetCtx.fillStyle = "#34c759"; targetCtx.beginPath(); targetCtx.arc(0, -displayH/2 - rotHandleOffset, handleRadius, 0, Math.PI*2); targetCtx.fill();
             targetCtx.restore();
         }
     });
@@ -692,7 +748,7 @@ function selectFontFromCustomMenu(fontFamily, displayLabel) {
 
 function createNewTextObject(initialText = "SMILE!") {
     saveHistoryState();
-    let newTextObj = { type: 'text', text: initialText, fontFamily: selectedFontFamilyValue, color: document.getElementById("textCustomColor").value, fontSize: 46, x: canvas.width / 2, y: canvas.height - 100, w: 180, h: 55, angle: 0 };
+    let newTextObj = { type: 'text', text: initialText, fontFamily: selectedFontFamilyValue, color: document.getElementById("textCustomColor").value, fontSize: 40, x: canvas.width / 2, y: canvas.height - 100, w: 160, h: 50, angle: 0, scaleX: 1, scaleY: 1 };
     stageObjects.push(newTextObj); activeTargetObject = newTextObj; syncTextInputsPanel(); drawBoothCanvas();
 }
 
@@ -715,12 +771,18 @@ function handleCustomColorChoice(hex) { saveHistoryState(); frameBackgroundColor
 
 function generateVectorSticker(type) {
     saveHistoryState();
-    let path = type === 'star' ? "M12 1.74l3.19 6.46 7.13 1.04-5.16 5.03 1.22 7.1-6.38-3.36-6.38 3.36 1.22-7.1-5.16-5.03 7.13-1.04z" : "M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z";
-    let color = type === 'star' ? "#ffb703" : "#e63946";
-    let url = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='${encodeURIComponent(color)}' d='${path}'/></svg>";
+    let path = "M12 1.74l3.19 6.46 7.13 1.04-5.16 5.03 1.22 7.1-6.38-3.36-6.38 3.36 1.22-7.1-5.16-5.03 7.13-1.04z";
+    let color = "#ffb703";
+    
+    if (type === 'heart') { path = "M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"; color = "#e63946"; }
+    else if (type === 'sparkle') { path = "M12 2s1 5 6 6-6 1-6 6-1-5-6-6 5-1 6-6z"; color = "#00f5d4"; }
+    else if (type === 'crown') { path = "M2 22h20v-2H2v2zm3-4h14l2-8-5 4-4-7-4 7-5-4 2 8z"; color = "#ffe14c"; }
+    else if (type === 'butterfly') { path = "M12 8c.5-2 2.5-5 5.5-5 2.5 0 4.5 2 4.5 4.5 0 3-3.5 6.5-10 9.5-6.5-3-10-6.5-10-9.5C2 5 4 3 6.5 3 9.5 3 11.5 6 12 8z"; color = "#ff70a6"; }
+
+    let url = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='${encodeURIComponent(color)}' d='${path}'/></svg>`;
     let img = new Image();
     img.onload = function() {
-        stageObjects.push({ type: 'sticker', img: img, imgSrc: url, x: canvas.width / 2, y: canvas.height / 2, w: 90, h: 90, angle: 0 });
+        stageObjects.push({ type: 'sticker', img: img, imgSrc: url, x: canvas.width / 2, y: canvas.height / 2, w: 90, h: 90, angle: 0, scaleX: 1, scaleY: 1 });
         activeTargetObject = stageObjects[stageObjects.length - 1]; drawBoothCanvas();
     };
     img.src = url;
@@ -728,7 +790,7 @@ function generateVectorSticker(type) {
 
 function generateEmojiSticker(emojiChar) {
     saveHistoryState();
-    let newEmojiObj = { type: 'text', text: emojiChar, fontFamily: 'sans-serif', color: '#ffffff', fontSize: 50, x: canvas.width / 2, y: canvas.height / 2, w: 70, h: 70, angle: 0 };
+    let newEmojiObj = { type: 'text', text: emojiChar, fontFamily: 'sans-serif', color: '#ffffff', fontSize: 55, x: canvas.width / 2, y: canvas.height / 2, w: 75, h: 75, angle: 0, scaleX: 1, scaleY: 1 };
     stageObjects.push(newEmojiObj); activeTargetObject = newEmojiObj; drawBoothCanvas();
 }
 
@@ -747,9 +809,12 @@ function setupCanvasInteractions() {
     function onStart(e) {
         if (activeStep !== 3) return;
         let pos = getMousePos(e), now = Date.now();
+        
         if (now - lastTapTime < 250 && activeTargetObject) {
             let local = toLocalPos(activeTargetObject, pos.x, pos.y);
-            if (local.x >= -activeTargetObject.w/2 && local.x <= activeTargetObject.w/2 && local.y >= -activeTargetObject.h/2 && local.y <= activeTargetObject.h/2) {
+            let displayW = activeTargetObject.w * activeTargetObject.scaleX;
+            let displayH = activeTargetObject.h * activeTargetObject.scaleY;
+            if (local.x >= -displayW/1.4 && local.x <= displayW/1.4 && local.y >= -displayH/1.4 && local.y <= displayH/1.4) {
                 saveHistoryState(); stageObjects = stageObjects.filter(o => o !== activeTargetObject); activeTargetObject = null; syncTextInputsPanel(); drawBoothCanvas(); return;
             }
         }
@@ -757,20 +822,42 @@ function setupCanvasInteractions() {
 
         if (activeTargetObject) {
             let local = toLocalPos(activeTargetObject, pos.x, pos.y);
-            if (Math.sqrt((local.x - 0)**2 + (local.y - (-activeTargetObject.h/2 - rotHandleOffset))**2) < 25) {
+            let displayW = activeTargetObject.w * activeTargetObject.scaleX;
+            let displayH = activeTargetObject.h * activeTargetObject.scaleY;
+            
+            // BERDE: Rotation handle
+            if (Math.sqrt((local.x - 0)**2 + (local.y - (-displayH/2 - rotHandleOffset))**2) < 28) {
                 saveHistoryState(); isHoldingObject = true; activeInteractionType = 'rotate';
                 startRotationAngle = Math.atan2(pos.y - activeTargetObject.y, pos.x - activeTargetObject.x); objectStartAngle = activeTargetObject.angle; return;
             }
-            if (Math.sqrt((local.x - activeTargetObject.w/2)**2 + (local.y - activeTargetObject.h/2)**2) < 25) {
+            // ASUL: 4 Sulok para sa Uniform Proportional Resize (Scale)
+            if (Math.sqrt((local.x - (-displayW/2))**2 + (local.y - displayH/2)**2) < 26 || 
+                Math.sqrt((local.x - (-displayW/2))**2 + (local.y - (-displayH/2))**2) < 26 ||
+                Math.sqrt((local.x - displayW/2)**2 + (local.y - displayH/2)**2) < 26 || 
+                Math.sqrt((local.x - displayW/2)**2 + (local.y - (-displayH/2))**2) < 26) {
                 saveHistoryState(); isHoldingObject = true; activeInteractionType = 'scale';
-                objectStartWidth = activeTargetObject.w; objectStartFontSize = activeTargetObject.fontSize || 36; startDistance = local; return;
+                objectStartScaleX = activeTargetObject.scaleX; objectStartScaleY = activeTargetObject.scaleY; startDistance = local; return;
+            }
+            // LILA (KANAN/KALIWANG GITNA): Independent X Stretch (Lapad lang)
+            if (Math.sqrt((local.x - displayW/2)**2 + local.y**2) < 26 || 
+                Math.sqrt((local.x - (-displayW/2))**2 + local.y**2) < 26) {
+                saveHistoryState(); isHoldingObject = true; activeInteractionType = 'stretch-x';
+                objectStartScaleX = activeTargetObject.scaleX; startDistance = local; return;
+            }
+            // LILA (TAAS/BABANG GITNA): Independent Y Stretch (Taas lang)
+            if (Math.sqrt(local.x**2 + (local.y - displayH/2)**2) < 26 || 
+                Math.sqrt(local.x**2 + (local.y - (-displayH/2))**2) < 26) {
+                saveHistoryState(); isHoldingObject = true; activeInteractionType = 'stretch-y';
+                objectStartScaleY = activeTargetObject.scaleY; startDistance = local; return;
             }
         }
 
         let match = null;
         for (let i = stageObjects.length - 1; i >= 0; i--) {
             let local = toLocalPos(stageObjects[i], pos.x, pos.y);
-            if (local.x >= -stageObjects[i].w/2 && local.x <= stageObjects[i].w/2 && local.y >= -stageObjects[i].h/2 && local.y <= stageObjects[i].h/2) { match = stageObjects[i]; break; }
+            let displayW = stageObjects[i].w * stageObjects[i].scaleX;
+            let displayH = stageObjects[i].h * stageObjects[i].scaleY;
+            if (local.x >= -displayW/2 && local.x <= displayW/2 && local.y >= -displayH/2 && local.y <= displayH/2) { match = stageObjects[i]; break; }
         }
         if (match) { saveHistoryState(); activeTargetObject = match; isHoldingObject = true; activeInteractionType = 'drag'; syncTextInputsPanel(); stageObjects = stageObjects.filter(o => o !== match); stageObjects.push(match); } 
         else { activeTargetObject = null; syncTextInputsPanel(); }
@@ -780,12 +867,24 @@ function setupCanvasInteractions() {
     function onMove(e) {
         if (!isHoldingObject || !activeTargetObject) return;
         let pos = getMousePos(e), local = toLocalPos(activeTargetObject, pos.x, pos.y);
-        if (activeInteractionType === 'drag') { activeTargetObject.x = pos.x; activeTargetObject.y = pos.y; } 
+        
+        if (activeInteractionType === 'drag') { 
+            activeTargetObject.x = pos.x; activeTargetObject.y = pos.y; 
+        } 
         else if (activeInteractionType === 'scale') {
-            let scale = Math.abs(local.x) / (objectStartWidth / 2);
-            activeTargetObject.w = Math.max(30, objectStartWidth * scale); activeTargetObject.h = Math.max(30, (objectStartWidth * scale) * 0.4);
-            if (activeTargetObject.type === 'text') activeTargetObject.fontSize = Math.max(12, Math.round(objectStartFontSize * scale));
-        } else if (activeInteractionType === 'rotate') {
+            let factor = Math.abs(local.x) / Math.abs(startDistance.x);
+            activeTargetObject.scaleX = Math.max(0.2, objectStartScaleX * factor);
+            activeTargetObject.scaleY = Math.max(0.2, objectStartScaleY * factor);
+        } 
+        else if (activeInteractionType === 'stretch-x') {
+            let factor = Math.abs(local.x) / Math.abs(startDistance.x);
+            activeTargetObject.scaleX = Math.max(0.2, objectStartScaleX * factor);
+        }
+        else if (activeInteractionType === 'stretch-y') {
+            let factor = Math.abs(local.y) / Math.abs(startDistance.y);
+            activeTargetObject.scaleY = Math.max(0.2, objectStartScaleY * factor);
+        }
+        else if (activeInteractionType === 'rotate') {
             activeTargetObject.angle = objectStartAngle + (Math.atan2(pos.y - activeTargetObject.y, pos.x - activeTargetObject.x) - startRotationAngle);
         }
         if (e.cancelable) e.preventDefault();
