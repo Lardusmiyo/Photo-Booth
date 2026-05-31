@@ -97,7 +97,6 @@ canvas.main-workspace {
     background: #fff; border-radius: 8px; display: block; box-shadow: 0 6px 20px rgba(0,0,0,0.5); width: 260px !important; height: auto !important;
 }
 
-/* History Undo / Redo Control Bar Style */
 .history-control-bar {
     display: flex; gap: 8px; margin-bottom: 8px; width: 260px; justify-content: space-between;
 }
@@ -145,6 +144,7 @@ canvas.main-workspace {
 .btn-next { background: #007aff; color: white; }
 .btn-next:disabled { background: #1f1f26; color: #555; cursor: not-allowed; }
 .btn-download { background: #34c759; color: white; width: 100%; font-size: 14px; font-weight: 700; padding: 14px; }
+
 </style>
 </head>
 <body>
@@ -157,9 +157,10 @@ canvas.main-workspace {
         <span class="step-indicator" id="ind-4">4. Save</span>
     </div>
 
+    <!-- STEP 1 SCREEN -->
     <div class="booth-screen active" id="screen-1">
-        <h2 class="screen-title">Piliin ang Iyong Layout</h2>
-        <div class="screen-subtitle">Piliin ang nais mong hulmahan at bilang ng litrato</div>
+        <h2 class="screen-title">Choose Your Layout</h2>
+        <div class="screen-subtitle">Pick your frame shape and number of photos</div>
         <div class="scroll-grid-wrapper">
             <div class="template-card selected" onclick="pickLayoutSchema(1, this)"><canvas id="thumb-1" class="thumb-canvas" width="50" height="75"></canvas><span class="title-label">Quad Grid</span><span class="count-badge">4 Photos</span></div>
             <div class="template-card" onclick="pickLayoutSchema(2, this)"><canvas id="thumb-2" class="thumb-canvas" width="50" height="150"></canvas><span class="title-label">3-Photo Strip</span><span class="count-badge">3 Photos</span></div>
@@ -172,13 +173,15 @@ canvas.main-workspace {
             <div class="template-card" onclick="pickLayoutSchema(9, this)"><canvas id="thumb-9" class="thumb-canvas" width="50" height="55"></canvas><span class="title-label">Wide Cinematic</span><span class="count-badge">1 Photo</span></div>
             <div class="template-card" onclick="pickLayoutSchema(10, this)"><canvas id="thumb-10" class="thumb-canvas" width="50" height="85"></canvas><span class="title-label">6-Grid Poster</span><span class="count-badge">6 Photos</span></div>
             <div class="template-card" onclick="pickLayoutSchema(11, this)"><canvas id="thumb-11" class="thumb-canvas" width="50" height="190"></canvas><span class="title-label">Mega 5-Strip</span><span class="count-badge">5 Photos</span></div>
+            <div class="template-card" onclick="pickLayoutSchema(12, this)"><canvas id="thumb-12" class="thumb-canvas" width="50" height="75"></canvas><span class="title-label">Polaroid Showcase</span><span class="count-badge">1 Photo</span></div>
         </div>
-        <div class="nav-footer"><button class="btn-nav btn-next" onclick="navigateToScreen(2)">Susunod: Kumuha ng Larawan ➔</button></div>
+        <div class="nav-footer"><button class="btn-nav btn-next" onclick="navigateToScreen(2)">Next: Take Photos ➔</button></div>
     </div>
 
+    <!-- STEP 2 SCREEN -->
     <div class="booth-screen" id="screen-2">
         <h2 class="screen-title" id="camTitlePrompt">Capture Live Shots</h2>
-        <div class="screen-subtitle">Igitna ang sarili sa loob ng guide lines</div>
+        <div class="screen-subtitle">Center yourself within the guide lines</div>
         
         <div class="camera-box">
             <video id="boothVideo" autoplay playsinline muted></video>
@@ -198,39 +201,43 @@ canvas.main-workspace {
                 </select>
                 
                 <select id="filterDropdown" style="flex:1; padding:10px; background:#22222a; border:1px solid #363644; color:#fff; font-size:12px; border-radius:8px; outline:none;" onchange="syncLiveFilterMode()">
-                    <option value="none">🎬 Normal Filter</option>
+                    <option value="none">🎬 Normal</option>
                     <option value="creamy">🍦 Creamy Soft</option>
                     <option value="cyber">🌆 Retro Cyber</option>
-                    <option value="noir">🎬 Dramatic Noir</option>
+                    <option value="noir">⚫ Dramatic Noir</option>
                     <option value="digicam">📸 Digicam Flash</option>
                     <option value="fuji">🎞️ Fuji Chrome</option>
                     <option value="sepia">⏳ Vintage Sepia</option>
                     <option value="velvet">🔥 Velvet Warm</option>
                     <option value="polar">❄️ Cool Polar</option>
+                    <option value="lomo">🎡 Lomo Vivid</option>
+                    <option value="vivid">🌈 Super Vivid</option>
+                    <option value="matte">🎨 Soft Matte</option>
+                    <option value="bronze">🍂 Bronze Tone</option>
+                    <option value="dreamy">✨ Dreamy Glow</option>
+                    <option value="candy">🍭 Candy Pop</option>
+                    <option value="teal">🌊 Teal & Orange</option>
                 </select>
             </div>
             <div style="display:flex; gap:6px; align-items:center;">
-                <div style="flex:1; display:flex; align-items:center; gap:8px; padding:8px; background:#1f1f26; border-radius:8px; border:1px solid #2c2c38;">
-                    <input type="checkbox" id="toggleDateStampCheckbox" checked style="width:16px; height:16px; cursor:pointer;">
-                    <label for="toggleDateStampCheckbox" style="font-size:11px; color:#a1a1aa; font-weight:700; cursor:pointer;">💡 Date Stamp</label>
-                </div>
                 <div style="flex:1; display:flex; align-items:center; gap:8px; padding:8px; background:#1f1f26; border-radius:8px; border:1px solid #2c2c38;">
                     <input type="checkbox" id="continuousCaptureCheckbox" style="width:16px; height:16px; cursor:pointer;">
                     <label for="continuousCaptureCheckbox" style="font-size:11px; color:#007aff; font-weight:700; cursor:pointer;">🔄 Continuous Mode</label>
                 </div>
             </div>
-            <button class="btn-nav btn-next" id="shutterTriggerBtn" style="width:100%; background:#007aff; font-size:13px;" onclick="fireCameraCountdown()">📸 Kunan ng Litrato</button>
+            <button class="btn-nav btn-next" id="shutterTriggerBtn" style="width:100%; background:#007aff; font-size:13px;" onclick="fireCameraCountdown()">📸 Take a Photo</button>
         </div>
         
         <div class="nav-footer">
-            <button class="btn-nav btn-back" onclick="navigateToScreen(1)">⬅ Bumalik</button>
-            <button class="btn-nav btn-next" id="goToDecorBtn" disabled onclick="navigateToScreen(3)">Piliin ang Design ➔</button>
+            <button class="btn-nav btn-back" onclick="navigateToScreen(1)">⬅ Back</button>
+            <button class="btn-nav btn-next" id="goToDecorBtn" disabled onclick="navigateToScreen(3)">Choose a Design ➔</button>
         </div>
     </div>
 
+    <!-- STEP 3 SCREEN -->
     <div class="booth-screen" id="screen-3">
-        <h2 class="screen-title">Piliin ang Design Frame & Text Stickers</h2>
-        <div class="screen-subtitle">Gamitin ang 4 na asul na buttons sa gilid para mag-stretch at kanang sulok para lumaki/maliit.</div>
+        <h2 class="screen-title">Choose Design Frame & Text Labels</h2>
+        <div class="screen-subtitle">Use the 4 blue handles to stretch, and the corner handle to resize.</div>
         
         <div class="scroll-grid-wrapper" style="background: #1a1a24; padding: 10px; border-radius: 12px;">
             <div class="design-card selected" onclick="pickDesignStyle('classic', this)"><span style="font-size:20px;">⬜</span><span class="title-label">Minimalist White</span></div>
@@ -238,6 +245,20 @@ canvas.main-workspace {
             <div class="design-card" onclick="pickDesignStyle('filmstrip', this)"><span style="font-size:20px;">🎞️</span><span class="title-label">Retro Film</span></div>
             <div class="design-card" onclick="pickDesignStyle('cream', this)"><span style="font-size:20px;">🧸</span><span class="title-label">Aesthetic Cream</span></div>
             <div class="design-card" onclick="pickDesignStyle('noir', this)"><span style="font-size:20px;">⚫</span><span class="title-label">Classic Noir</span></div>
+            <div class="design-card" onclick="pickDesignStyle('sakura', this)"><span style="font-size:20px;">🌸</span><span class="title-label">Sakura Bloom</span></div>
+            <div class="design-card" onclick="pickDesignStyle('lavender', this)"><span style="font-size:20px;">💜</span><span class="title-label">Dreamy Lavender</span></div>
+            <div class="design-card" onclick="pickDesignStyle('bubblegum', this)"><span style="font-size:20px;">🍬</span><span class="title-label">Bubblegum Dots</span></div>
+            <div class="design-card" onclick="pickDesignStyle('stargirl', this)"><span style="font-size:20px;">✨</span><span class="title-label">Stargirl Night</span></div>
+            <div class="design-card" onclick="pickDesignStyle('cottagecore', this)"><span style="font-size:20px;">🌿</span><span class="title-label">Cottagecore</span></div>
+            <div class="design-card" onclick="pickDesignStyle('vintage', this)"><span style="font-size:20px;">📷</span><span class="title-label">Polaroid Vintage</span></div>
+            <div class="design-card" onclick="pickDesignStyle('angelcore', this)"><span style="font-size:20px;">👼</span><span class="title-label">Angel Core</span></div>
+            <div class="design-card" onclick="pickDesignStyle('pastelwave', this)"><span style="font-size:20px;">🌈</span><span class="title-label">Pastel Wave</span></div>
+            <div class="design-card" onclick="pickDesignStyle('rosegold', this)"><span style="font-size:20px;">🌹</span><span class="title-label">Rose Gold Foil</span></div>
+            <div class="design-card" onclick="pickDesignStyle('fairycore', this)"><span style="font-size:20px;">🧚</span><span class="title-label">Fairycore Magic</span></div>
+            <div class="design-card" onclick="pickDesignStyle('matcha', this)"><span style="font-size:20px;">🍵</span><span class="title-label">Matcha Latte</span></div>
+            <div class="design-card" onclick="pickDesignStyle('babypink', this)"><span style="font-size:20px;">🩷</span><span class="title-label">Baby Pink</span></div>
+            <div class="design-card" onclick="pickDesignStyle('midnightblue', this)"><span style="font-size:20px;">🌌</span><span class="title-label">Midnight Blue</span></div>
+            <div class="design-card" onclick="pickDesignStyle('groovy', this)"><span style="font-size:20px;">🌀</span><span class="title-label">Groovy Retro</span></div>
         </div>
 
         <div class="text-tool-box">
@@ -278,21 +299,22 @@ canvas.main-workspace {
         </div>
 
         <div class="nav-footer">
-            <button class="btn-nav btn-back" onclick="navigateToScreen(2)">⬅ Baguhin ang Litrato</button>
-            <button class="btn-nav btn-next" onclick="navigateToScreen(4)">I-render at I-save ➔</button>
+            <button class="btn-nav btn-back" onclick="navigateToScreen(2)">⬅ Retake Photos</button>
+            <button class="btn-nav btn-next" onclick="navigateToScreen(4)">Finish & Save ➔</button>
         </div>
     </div>
 
+    <!-- STEP 4 SCREEN -->
     <div class="booth-screen" id="screen-4">
-        <h2 class="screen-title">Gawa na ang iyong Larawan!</h2>
-        <div class="screen-subtitle">I-click ang berdeng button para i-download sa iyong phone</div>
+        <h2 class="screen-title">Your Photo is Ready!</h2>
+        <div class="screen-subtitle">Tap the green button to download to your phone</div>
         <div class="canvas-scroll-container"><canvas id="boothCanvasFinalCopy" class="main-workspace" width="500" height="750"></canvas></div>
         
         <button class="btn-nav btn-download" onclick="triggerMobileSafeDisplay()">📥 DOWNLOAD / SAVE PHOTO</button>
         
         <div class="nav-footer" style="margin-top:8px;">
-            <button class="btn-nav btn-back" style="background:#2c2c38; color:white;" onclick="navigateToScreen(3)">⬅ Palitan ang Design</button>
-            <button class="btn-nav" style="background:#ff3b30; color:white;" onclick="resetEntireBoothProcess()">🔄 Ulitin Muli</button>
+            <button class="btn-nav btn-back" style="background:#2c2c38; color:white;" onclick="navigateToScreen(3)">⬅ Change Design</button>
+            <button class="btn-nav" style="background:#ff3b30; color:white;" onclick="resetEntireBoothProcess()">🔄 Start Over</button>
         </div>
     </div>
 </div>
@@ -319,14 +341,14 @@ let initialRotationAngle = 0;
 let initialMouseAngle = 0;
 let lastTapTime = 0;
 
-// Storage para sa stretch parameters
 let initialBaseSize = 34;
 let initialScaleX = 1;
 let initialScaleY = 1;
 
-// Undo & Redo History System Stacks
 let undoHistoryTimelineStack = [];
 let redoHistoryTimelineStack = [];
+let showCenterGuideX = false;
+let showCenterGuideY = false;
 
 const templateRegistry = {
     1: { w: 500, h: 650, frames: [
@@ -353,22 +375,37 @@ const templateRegistry = {
     9: { w: 500, h: 480, frames: [ { id:1, x:25, y:25, w:450, h:320, image:null } ], label: "Wide Cinematic" },
     10: { w: 500, h: 840, frames: [
         { id:1, x:25,  y:25,  w:215, h:230, image:null }, { id:2, x:260, y:25,  w:215, h:230, image:null },
-        { id:3, x:280, y:280, w:215, h:230, image:null }, { id:4, x:260, y:280, w:215, h:230, image:null },
+        { id:3, x:25,  y:280, w:215, h:230, image:null }, { id:4, x:260, y:280, w:215, h:230, image:null },
         { id:5, x:25,  y:535, w:215, h:230, image:null }, { id:6, x:260, y:535, w:215, h:230, image:null }
     ], label: "6-Grid Poster" },
     11: { w: 400, h: 1720, frames: [
         { id:1, x:25, y:25,  w:350, h:300, image:null }, { id:2, x:25, y:350, w:350, h:300, image:null },
         { id:3, x:25, y:675, w:350, h:300, image:null }, { id:4, x:25, y:1000, w:350, h:300, image:null },
         { id:5, x:25, y:1325, w:350, h:300, image:null }
-    ], label: "Mega 5-Strip" }
+    ], label: "Mega 5-Strip" },
+    12: { w: 500, h: 660, frames: [ { id:1, x:35, y:35, w:430, h:430, image:null } ], label: "Polaroid Showcase" }
 };
 
 const designRegistry = {
-    classic: { bgColor: "#ffffff", strokeColor: "#eaeaea" },
-    y2k: { bgColor: "#ff70a6", strokeColor: "rgba(255,255,255,0.4)" },
-    filmstrip: { bgColor: "#111111", strokeColor: "#222" },
-    cream: { bgColor: "#faedcd", strokeColor: "#d4a373" },
-    noir: { bgColor: "#000000", strokeColor: "#333" }
+    classic:      { bgColor: "#ffffff", strokeColor: "#eaeaea" },
+    y2k:          { bgColor: "#ff70a6", strokeColor: "#ffffff", isNeon: true },
+    filmstrip:    { bgColor: "#111111", strokeColor: "#222", isFilm: true },
+    cream:        { bgColor: "#faedcd", strokeColor: "#d4a373" },
+    noir:         { bgColor: "#000000", strokeColor: "#333" },
+    sakura:       { bgColor: "#fff0f6", strokeColor: "#ffb3cc", isSakura: true },
+    lavender:     { bgColor: "#f3eeff", strokeColor: "#c4a8f5", isLavender: true },
+    bubblegum:    { bgColor: "#fff0fb", strokeColor: "#ff5fa2", isBubblegum: true },
+    stargirl:     { bgColor: "#07071a", strokeColor: "#ffd700", isStargirl: true },
+    cottagecore:  { bgColor: "#fdf6ec", strokeColor: "#a07850", isCottagecore: true },
+    vintage:      { bgColor: "#f5efdc", strokeColor: "#c8a96e", isVintage: true },
+    angelcore:    { bgColor: "#ffffff", strokeColor: "#ffd6e7", isAngelcore: true },
+    pastelwave:   { bgColor: "#fde8f5", strokeColor: "#b5e8f7", isPastelwave: true },
+    rosegold:     { bgColor: "#fff5f0", strokeColor: "#c9876a", isRosegold: true },
+    fairycore:    { bgColor: "#fef0ff", strokeColor: "#d4a0ff", isFairycore: true },
+    matcha:       { bgColor: "#f0f7ee", strokeColor: "#7aab6a", isMatcha: true },
+    babypink:     { bgColor: "#fff0f5", strokeColor: "#ffadc5", isBabypink: true },
+    midnightblue: { bgColor: "#070b1a", strokeColor: "#3a6bc9", isMidnightblue: true },
+    groovy:       { bgColor: "#fff9e6", strokeColor: "#e05c2a", isGroovy: true }
 };
 
 let currentFrameStructure = JSON.parse(JSON.stringify(templateRegistry[1].frames));
@@ -384,7 +421,6 @@ window.onload = function() {
     });
 };
 
-// HISTORY TRACKING CONTROLLER ENGINE (Deep-Copy)
 function pushActiveStateToTimeline() {
     let currentSnapshot = stickerTextList.map(item => ({
         id: item.id,
@@ -402,21 +438,17 @@ function pushActiveStateToTimeline() {
     }));
     
     undoHistoryTimelineStack.push(JSON.stringify(currentSnapshot));
-    redoHistoryTimelineStack = []; // I-reset ang redo stack kapag may bagong manual action
+    redoHistoryTimelineStack = []; 
     syncHistoryButtonsStatus();
 }
 
 function undoActiveState() {
     if (undoHistoryTimelineStack.length === 0) return;
-    
-    // Kunin ang kasalukuyang snapshot bago mag-undo para ilagay sa Redo
     let currentSnapshot = stickerTextList.map(item => ({ ...item }));
     redoHistoryTimelineStack.push(JSON.stringify(currentSnapshot));
     
     let previousStateStr = undoHistoryTimelineStack.pop();
     stickerTextList = JSON.parse(previousStateStr);
-    
-    // I-clear ang selection para iwas crash
     activeTargetSticker = null;
     document.getElementById("stickerTextInput").value = "";
     
@@ -426,13 +458,11 @@ function undoActiveState() {
 
 function redoActiveState() {
     if (redoHistoryTimelineStack.length === 0) return;
-    
     let currentSnapshot = stickerTextList.map(item => ({ ...item }));
     undoHistoryTimelineStack.push(JSON.stringify(currentSnapshot));
     
     let nextStateStr = redoHistoryTimelineStack.pop();
     stickerTextList = JSON.parse(nextStateStr);
-    
     activeTargetSticker = null;
     document.getElementById("stickerTextInput").value = "";
     
@@ -453,7 +483,7 @@ function updateDropdownVisualStyles() {
 function updateLiveSelectedFontInline() {
     updateDropdownVisualStyles();
     if (activeTargetSticker) {
-        pushActiveStateToTimeline(); // Itala bago baguhin
+        pushActiveStateToTimeline(); 
         activeTargetSticker.font = document.getElementById("stickerFontInput").value;
         activeTargetSticker.color = document.getElementById("stickerColorInput").value;
         
@@ -467,10 +497,7 @@ function updateLiveSelectedFontInline() {
 
 function setupTextInputLiveSyncListener() {
     document.getElementById("stickerTextInput").addEventListener("focus", () => {
-        if (activeTargetSticker) {
-            // Itala ang state kapag nag-focus para maging simula ng undo checkpoint
-            this.oldTextState = JSON.stringify(stickerTextList);
-        }
+        if (activeTargetSticker) { this.oldTextState = JSON.stringify(stickerTextList); }
     });
 
     document.getElementById("stickerTextInput").addEventListener("input", (e) => {
@@ -484,7 +511,6 @@ function setupTextInputLiveSyncListener() {
     });
     
     document.getElementById("stickerTextInput").addEventListener("blur", () => {
-        // I-save sa kasaysayan kapag natapos na mag-type ang user
         if (activeTargetSticker) { pushActiveStateToTimeline(); }
     });
 }
@@ -550,8 +576,7 @@ function triggerLiveOverlayRedraw() {
 }
 
 function addStickerTextToCanvas() {
-    pushActiveStateToTimeline(); // Itala bago magdagdag ng bago
-
+    pushActiveStateToTimeline(); 
     let rawStr = document.getElementById("stickerTextInput").value.trim();
     if (!rawStr) rawStr = "Beautiful Day";
     
@@ -642,7 +667,22 @@ function applyFilterPixelMath(data, filterType) {
         } else if (filterType === "velvet") {
             data[i] = Math.min(255, r * 1.2); data[i+1] = Math.min(255, g * 0.9); data[i+2] = Math.min(255, b * 0.8);
         } else if (filterType === "polar") {
-            data[i] = Math.min(255, r * 0.8) ; data[i+1] = Math.min(255, g * 1.1); data[i+2] = Math.min(255, b * 1.3);
+            data[i] = Math.min(255, r * 0.8); data[i+1] = Math.min(255, g * 1.1); data[i+2] = Math.min(255, b * 1.3);
+        } else if (filterType === "lomo") {
+            data[i] = Math.min(255, r * 1.4); data[i+1] = Math.min(255, g * 0.85); data[i+2] = Math.min(255, b * 0.7);
+        } else if (filterType === "vivid") {
+            let avg = (r + g + b) / 3;
+            data[i] = Math.min(255, avg + (r - avg) * 2.2); data[i+1] = Math.min(255, avg + (g - avg) * 2.2); data[i+2] = Math.min(255, avg + (b - avg) * 2.2);
+        } else if (filterType === "matte") {
+            data[i] = Math.min(255, r * 0.88 + 28); data[i+1] = Math.min(255, g * 0.88 + 28); data[i+2] = Math.min(255, b * 0.88 + 28);
+        } else if (filterType === "bronze") {
+            data[i] = Math.min(255, r * 1.25 + 20); data[i+1] = Math.min(255, g * 1.0 + 5); data[i+2] = Math.min(255, b * 0.6);
+        } else if (filterType === "dreamy") {
+            data[i] = Math.min(255, r * 1.1 + 18); data[i+1] = Math.min(255, g * 0.95 + 12); data[i+2] = Math.min(255, b * 1.15 + 18);
+        } else if (filterType === "candy") {
+            data[i] = Math.min(255, r * 1.2 + 20); data[i+1] = Math.min(255, g * 1.1 + 10); data[i+2] = Math.min(255, b * 1.3 + 30);
+        } else if (filterType === "teal") {
+            data[i] = Math.min(255, r * 1.3); data[i+1] = Math.min(255, g * 1.05); data[i+2] = Math.min(255, b * 0.75);
         }
     }
 }
@@ -670,7 +710,7 @@ function checkCameraSlotStatus() {
         document.getElementById("dynamicRatioGuide").style.width = `${Math.min((nextEmpty.w / parentConfig.w) * 130, 90)}%`;
         document.getElementById("dynamicRatioGuide").style.aspectRatio = `${nextEmpty.w} / ${nextEmpty.h}`;
     } else {
-        document.getElementById("camTitlePrompt").innerText = "Tapos na ang pagkuha ng lahat ng litrato!";
+        document.getElementById("camTitlePrompt").innerText = "All photos captured!";
         triggerBtn.disabled = true; nextBtn.disabled = false;
         document.getElementById("dynamicRatioGuide").style.width = "0%";
     }
@@ -713,7 +753,7 @@ function executeShutterCaptureAction(targetSlot, isContinuous) {
     layer.className = "shutter-flash flash-burst"; layer.innerText = "";
     
     let chosenFilter = document.getElementById("filterDropdown").value;
-    let shouldAddDate = document.getElementById("toggleDateStampCheckbox").checked;
+    let shouldAddDate = false;
     
     isolatePhotoFromActiveCanvasFrame(targetSlot.id, chosenFilter, shouldAddDate, () => {
         setTimeout(() => { 
@@ -767,12 +807,11 @@ function setupStickerDragAndTransformListeners() {
         let coords = getCanvasCoordinates(e);
         let currentTime = Date.now();
 
-        // Double-tap to Delete Engine
         if (currentTime - lastTapTime < 300) {
             for (let i = stickerTextList.length - 1; i >= 0; i--) {
                 let stk = stickerTextList[i];
                 if (checkIfPointIsInsideStickerBox(coords.x, coords.y, stk)) {
-                    pushActiveStateToTimeline(); // Itala bago burahin
+                    pushActiveStateToTimeline(); 
                     stickerTextList.splice(i, 1);
                     activeTargetSticker = null;
                     transformActionNode = "none";
@@ -790,7 +829,6 @@ function setupStickerDragAndTransformListeners() {
             let cos = Math.cos(stk.angle);
             let sin = Math.sin(stk.angle);
 
-            // 1. Rotation Handler (Green Top Circle)
             let rotLocalX = 0;
             let rotLocalY = -stk.boxH / 2 - 22;
             let rotGlobalX = stk.x + (rotLocalX * cos - rotLocalY * sin);
@@ -806,7 +844,6 @@ function setupStickerDragAndTransformListeners() {
                 return;
             }
 
-            // 2. RIGHT STRETCH HANDLE (Gitnang Kanang Handle)
             let rStretchLocalX = stk.boxW / 2;
             let rStretchLocalY = 0;
             let rStretchGlobalX = stk.x + (rStretchLocalX * cos - rStretchLocalY * sin);
@@ -824,7 +861,6 @@ function setupStickerDragAndTransformListeners() {
                 return;
             }
 
-            // 3. LEFT STRETCH HANDLE (Gitnang Kaliwang Handle) - BAGO
             let lStretchLocalX = -stk.boxW / 2;
             let lStretchLocalY = 0;
             let lStretchGlobalX = stk.x + (lStretchLocalX * cos - lStretchLocalY * sin);
@@ -842,7 +878,6 @@ function setupStickerDragAndTransformListeners() {
                 return;
             }
 
-            // 4. BOTTOM STRETCH HANDLE (Gitnang Ibabang Handle)
             let bStretchLocalX = 0;
             let bStretchLocalY = stk.boxH / 2;
             let bStretchGlobalX = stk.x + (bStretchLocalX * cos - bStretchLocalY * sin);
@@ -860,7 +895,6 @@ function setupStickerDragAndTransformListeners() {
                 return;
             }
 
-            // 5. TOP STRETCH HANDLE (Gitnang Itaas na Handle) - BAGO
             let tStretchLocalX = 0;
             let tStretchLocalY = -stk.boxH / 2;
             let tStretchGlobalX = stk.x + (tStretchLocalX * cos - tStretchLocalY * sin);
@@ -878,7 +912,6 @@ function setupStickerDragAndTransformListeners() {
                 return;
             }
 
-            // 6. DIAGONAL SCALE / RESIZE (Mababang Kanang Sulok)
             let scaleLocalX = stk.boxW / 2;
             let scaleLocalY = stk.boxH / 2;
             let scaleGlobalX = stk.x + (scaleLocalX * cos - scaleLocalY * sin);
@@ -894,7 +927,6 @@ function setupStickerDragAndTransformListeners() {
                 return;
             }
 
-            // 7. Body Drag Selection
             if (checkIfPointIsInsideStickerBox(coords.x, coords.y, stk)) {
                 pushActiveStateToTimeline();
                 activeTargetSticker = stk;
@@ -922,6 +954,12 @@ function setupStickerDragAndTransformListeners() {
         if (transformActionNode === "move") {
             activeTargetSticker.x = coords.x - mouseOffsetPointer.x;
             activeTargetSticker.y = coords.y - mouseOffsetPointer.y;
+            const cfg = templateRegistry[selectedLayoutId];
+            const snapThreshold = 12;
+            showCenterGuideX = Math.abs(activeTargetSticker.x - cfg.w / 2) < snapThreshold;
+            showCenterGuideY = Math.abs(activeTargetSticker.y - cfg.h / 2) < snapThreshold;
+            if (showCenterGuideX) activeTargetSticker.x = cfg.w / 2;
+            if (showCenterGuideY) activeTargetSticker.y = cfg.h / 2;
         } 
         else if (transformActionNode === "rotate") {
             let currentMouseAngle = Math.atan2(coords.y - activeTargetSticker.y, coords.x - activeTargetSticker.x);
@@ -939,7 +977,6 @@ function setupStickerDragAndTransformListeners() {
             let dy = coords.y - activeTargetSticker.y;
             let localX = dx * cos + dy * sin;
             let ratio = localX / (initialMouseAngle || 1);
-            // Salungat na direksyon para sa kaliwang hatak
             activeTargetSticker.scaleX = Math.max(0.2, initialScaleX * (2 - ratio));
         }
         else if (transformActionNode === "stretchBottom") {
@@ -954,7 +991,6 @@ function setupStickerDragAndTransformListeners() {
             let dy = coords.y - activeTargetSticker.y;
             let localY = -dx * sin + dy * cos;
             let ratio = localY / (initialMouseAngle || 1);
-            // Salungat na direksyon para sa itaas na hatak
             activeTargetSticker.scaleY = Math.max(0.2, initialScaleY * (2 - ratio));
         }
         else if (transformActionNode === "diagonalScale") {
@@ -972,7 +1008,7 @@ function setupStickerDragAndTransformListeners() {
         e.preventDefault();
     }
 
-    function handleEnd() { transformActionNode = "none"; }
+    function handleEnd() { transformActionNode = "none"; showCenterGuideX = false; showCenterGuideY = false; }
 
     function syncStickerPanelSettings(stk) {
         let textInputField = document.getElementById("stickerTextInput");
@@ -1008,9 +1044,314 @@ function renderFrameFullEngine(targetCtx, structure, config, designName, isThumb
     let canvasH = config.h * scale;
     let design = designRegistry[designName] || designRegistry['classic'];
 
+    // 1. BACKGROUND RENDERING
     targetCtx.fillStyle = design.bgColor;
     targetCtx.fillRect(0, 0, canvasW, canvasH);
 
+    // 2. DESIGN OVERLAYS
+    if (design.isNeon) {
+        targetCtx.save();
+        targetCtx.strokeStyle = "#00ffff";
+        targetCtx.lineWidth = 6 * scale;
+        targetCtx.shadowBlur = 15 * scale;
+        targetCtx.shadowColor = "#00ffff";
+        targetCtx.strokeRect(4 * scale, 4 * scale, canvasW - 8 * scale, canvasH - 8 * scale);
+        targetCtx.strokeStyle = "#ff007f";
+        targetCtx.lineWidth = 3 * scale;
+        targetCtx.shadowBlur = 10 * scale;
+        targetCtx.shadowColor = "#ff007f";
+        targetCtx.strokeRect(10 * scale, 10 * scale, canvasW - 20 * scale, canvasH - 20 * scale);
+        targetCtx.restore();
+    }
+
+    if (design.isFilm) {
+        targetCtx.fillStyle = "#ffffff";
+        let holeW = 10 * scale, holeH = 15 * scale, gap = 22 * scale;
+        for (let y = gap; y < canvasH - gap; y += gap + holeH) {
+            targetCtx.fillRect(6 * scale, y, holeW, holeH);
+            targetCtx.fillRect(canvasW - 16 * scale, y, holeW, holeH);
+        }
+    }
+
+    if (design.isSakura) {
+        // Soft pink double border
+        targetCtx.save();
+        targetCtx.strokeStyle = "#ffb3cc";
+        targetCtx.lineWidth = 6 * scale;
+        targetCtx.strokeRect(5 * scale, 5 * scale, canvasW - 10 * scale, canvasH - 10 * scale);
+        targetCtx.strokeStyle = "#ffd6e7";
+        targetCtx.lineWidth = 2 * scale;
+        targetCtx.strokeRect(10 * scale, 10 * scale, canvasW - 20 * scale, canvasH - 20 * scale);
+        // Petals in corners (unscaled coords, will be multiplied by scale)
+        const petalPositions = [[18, 18], [config.w - 18, 18], [18, config.h - 18], [config.w - 18, config.h - 18]];
+        petalPositions.forEach(([px, py]) => {
+            for (let p = 0; p < 5; p++) {
+                targetCtx.save();
+                targetCtx.translate(px * scale, py * scale);
+                targetCtx.rotate((p * Math.PI * 2) / 5);
+                targetCtx.fillStyle = "#ffb3cc";
+                targetCtx.beginPath();
+                targetCtx.ellipse(0, -5 * scale, 2.5 * scale, 5 * scale, 0, 0, Math.PI * 2);
+                targetCtx.fill();
+                targetCtx.restore();
+            }
+            targetCtx.save();
+            targetCtx.translate(px * scale, py * scale);
+            targetCtx.fillStyle = "#ff91b0";
+            targetCtx.beginPath();
+            targetCtx.arc(0, 0, 2 * scale, 0, Math.PI * 2);
+            targetCtx.fill();
+            targetCtx.restore();
+        });
+        targetCtx.restore();
+    }
+
+    if (design.isLavender) {
+        // Soft double border with tiny heart dots along edges
+        targetCtx.save();
+        targetCtx.strokeStyle = "#c4a8f5";
+        targetCtx.lineWidth = 7 * scale;
+        targetCtx.strokeRect(5 * scale, 5 * scale, canvasW - 10 * scale, canvasH - 10 * scale);
+        targetCtx.strokeStyle = "#e0d0ff";
+        targetCtx.lineWidth = 2 * scale;
+        targetCtx.setLineDash([6 * scale, 6 * scale]);
+        targetCtx.strokeRect(13 * scale, 13 * scale, canvasW - 26 * scale, canvasH - 26 * scale);
+        targetCtx.setLineDash([]);
+        // Stars along border
+        const starSpacing = 45 * scale;
+        targetCtx.fillStyle = "#c4a8f5";
+        for (let x = starSpacing; x < canvasW; x += starSpacing) {
+            drawSmallStar(targetCtx, x, 8 * scale, 4 * scale);
+            drawSmallStar(targetCtx, x, canvasH - 8 * scale, 4 * scale);
+        }
+        for (let y = starSpacing; y < canvasH; y += starSpacing) {
+            drawSmallStar(targetCtx, 8 * scale, y, 4 * scale);
+            drawSmallStar(targetCtx, canvasW - 8 * scale, y, 4 * scale);
+        }
+        targetCtx.restore();
+    }
+
+    if (design.isBubblegum) {
+        // Polka dot pattern background layer
+        targetCtx.save();
+        const dotColors = ["#ffb3d9", "#b3eaff", "#ffe0b3", "#d4b3ff", "#b3ffd4"];
+        const dotSpacing = 30 * scale;
+        let dc = 0;
+        for (let dy = 10 * scale; dy < canvasH; dy += dotSpacing) {
+            for (let dx = 10 * scale; dx < canvasW; dx += dotSpacing) {
+                targetCtx.fillStyle = dotColors[dc % dotColors.length] + "55";
+                targetCtx.beginPath();
+                targetCtx.arc(dx, dy, 6 * scale, 0, Math.PI * 2);
+                targetCtx.fill();
+                dc++;
+            }
+        }
+        // Bold outer border
+        targetCtx.strokeStyle = "#ff5fa2";
+        targetCtx.lineWidth = 8 * scale;
+        targetCtx.strokeRect(4 * scale, 4 * scale, canvasW - 8 * scale, canvasH - 8 * scale);
+        targetCtx.strokeStyle = "#aaf0ff";
+        targetCtx.lineWidth = 3 * scale;
+        targetCtx.strokeRect(14 * scale, 14 * scale, canvasW - 28 * scale, canvasH - 28 * scale);
+        targetCtx.restore();
+    }
+
+    if (design.isStargirl) {
+        // Gold outer border with glow + scattered stars
+        targetCtx.save();
+        targetCtx.strokeStyle = "#ffd700";
+        targetCtx.lineWidth = 5 * scale;
+        targetCtx.shadowBlur = 12 * scale;
+        targetCtx.shadowColor = "#ffd700";
+        targetCtx.strokeRect(5 * scale, 5 * scale, canvasW - 10 * scale, canvasH - 10 * scale);
+        targetCtx.shadowBlur = 0;
+        targetCtx.strokeStyle = "#ffffff22";
+        targetCtx.lineWidth = 1 * scale;
+        targetCtx.strokeRect(12 * scale, 12 * scale, canvasW - 24 * scale, canvasH - 24 * scale);
+        // Scattered stars
+        const starSeeds = [[0.08,0.05],[0.92,0.05],[0.5,0.03],[0.15,0.95],[0.85,0.95],[0.5,0.97],[0.03,0.5],[0.97,0.5],[0.03,0.25],[0.97,0.75],[0.03,0.75],[0.97,0.25]];
+        starSeeds.forEach(([fx, fy]) => {
+            targetCtx.fillStyle = "#ffd700";
+            drawSmallStar(targetCtx, fx * canvasW, fy * canvasH, 5 * scale);
+        });
+        targetCtx.restore();
+    }
+
+    if (design.isCottagecore) {
+        // Warm double border + tiny leaf/dot corners
+        targetCtx.save();
+        targetCtx.strokeStyle = "#c9a06e";
+        targetCtx.lineWidth = 7 * scale;
+        targetCtx.strokeRect(5 * scale, 5 * scale, canvasW - 10 * scale, canvasH - 10 * scale);
+        targetCtx.strokeStyle = "#a07850";
+        targetCtx.lineWidth = 2 * scale;
+        targetCtx.setLineDash([4 * scale, 4 * scale]);
+        targetCtx.strokeRect(13 * scale, 13 * scale, canvasW - 26 * scale, canvasH - 26 * scale);
+        targetCtx.setLineDash([]);
+        // Leaf clusters in corners (unscaled coords)
+        [[16, 16], [config.w - 16, 16], [16, config.h - 16], [config.w - 16, config.h - 16]].forEach(([lx, ly]) => {
+            drawLeafCluster(targetCtx, lx * scale, ly * scale, scale);
+        });
+        targetCtx.restore();
+    }
+
+    if (design.isVintage) {
+        // Thick border + inner rule + sepia grain texture dots
+        targetCtx.save();
+        targetCtx.strokeStyle = "#c8a96e";
+        targetCtx.lineWidth = 10 * scale;
+        targetCtx.strokeRect(5 * scale, 5 * scale, canvasW - 10 * scale, canvasH - 10 * scale);
+        targetCtx.strokeStyle = "#e8d8b0";
+        targetCtx.lineWidth = 2 * scale;
+        targetCtx.strokeRect(18 * scale, 18 * scale, canvasW - 36 * scale, canvasH - 36 * scale);
+        // Grain dots
+        for (let i = 0; i < 120; i++) {
+            let gx = (Math.sin(i * 137.5) * 0.5 + 0.5) * canvasW;
+            let gy = (Math.cos(i * 97.3) * 0.5 + 0.5) * canvasH;
+            targetCtx.fillStyle = "rgba(160,120,60,0.06)";
+            targetCtx.beginPath();
+            targetCtx.arc(gx, gy, 2 * scale, 0, Math.PI * 2);
+            targetCtx.fill();
+        }
+        targetCtx.restore();
+    }
+
+    if (design.isAngelcore) {
+        // Soft pink glowing border + cloud puffs in corners
+        targetCtx.save();
+        targetCtx.strokeStyle = "#ffd6e7";
+        targetCtx.lineWidth = 8 * scale;
+        targetCtx.shadowBlur = 18 * scale;
+        targetCtx.shadowColor = "#ffb3ce";
+        targetCtx.strokeRect(4 * scale, 4 * scale, canvasW - 8 * scale, canvasH - 8 * scale);
+        targetCtx.shadowBlur = 0;
+        targetCtx.strokeStyle = "#ffe4f0";
+        targetCtx.lineWidth = 2 * scale;
+        targetCtx.setLineDash([5 * scale, 5 * scale]);
+        targetCtx.strokeRect(15 * scale, 15 * scale, canvasW - 30 * scale, canvasH - 30 * scale);
+        targetCtx.setLineDash([]);
+        // Tiny heart border accents
+        const heartSpacing = 50 * scale;
+        for (let x = heartSpacing; x < canvasW; x += heartSpacing) {
+            drawTinyHeart(targetCtx, x, 9 * scale, 4 * scale, "#ffb3ce");
+            drawTinyHeart(targetCtx, x, canvasH - 9 * scale, 4 * scale, "#ffb3ce");
+        }
+        for (let y = heartSpacing; y < canvasH; y += heartSpacing) {
+            drawTinyHeart(targetCtx, 9 * scale, y, 4 * scale, "#ffb3ce");
+            drawTinyHeart(targetCtx, canvasW - 9 * scale, y, 4 * scale, "#ffb3ce");
+        }
+        targetCtx.restore();
+    }
+
+    if (design.isPastelwave) {
+        // Pastel rainbow stripe border + wavy inner decoration
+        targetCtx.save();
+        const pastelBands = ["#ffd6e7", "#ffecd2", "#fffbd0", "#d4f5e9", "#d0eeff", "#e8d0ff"];
+        const bandW = 4 * scale;
+        pastelBands.forEach((color, i) => {
+            targetCtx.strokeStyle = color;
+            targetCtx.lineWidth = bandW;
+            const inset = (i * bandW) + 2 * scale;
+            targetCtx.strokeRect(inset, inset, canvasW - inset * 2, canvasH - inset * 2);
+        });
+        targetCtx.restore();
+    }
+
+    if (design.isRosegold) {
+        targetCtx.save();
+        const rgGrad = targetCtx.createLinearGradient(0, 0, canvasW, canvasH);
+        rgGrad.addColorStop(0, "#f7c5a0"); rgGrad.addColorStop(0.5, "#e8a87c"); rgGrad.addColorStop(1, "#d4956a");
+        targetCtx.strokeStyle = rgGrad; targetCtx.lineWidth = 9 * scale;
+        targetCtx.strokeRect(5 * scale, 5 * scale, canvasW - 10 * scale, canvasH - 10 * scale);
+        targetCtx.strokeStyle = "#f5d5c0"; targetCtx.lineWidth = 2 * scale;
+        targetCtx.strokeRect(16 * scale, 16 * scale, canvasW - 32 * scale, canvasH - 32 * scale);
+        targetCtx.strokeStyle = "#c9876a"; targetCtx.lineWidth = 1 * scale;
+        targetCtx.strokeRect(20 * scale, 20 * scale, canvasW - 40 * scale, canvasH - 40 * scale);
+        targetCtx.restore();
+    }
+
+    if (design.isFairycore) {
+        targetCtx.save();
+        targetCtx.strokeStyle = "#d4a0ff"; targetCtx.lineWidth = 6 * scale;
+        targetCtx.shadowBlur = 14 * scale; targetCtx.shadowColor = "#c880ff";
+        targetCtx.strokeRect(5 * scale, 5 * scale, canvasW - 10 * scale, canvasH - 10 * scale);
+        targetCtx.shadowBlur = 0;
+        targetCtx.strokeStyle = "#ecd4ff"; targetCtx.lineWidth = 2 * scale;
+        targetCtx.setLineDash([3 * scale, 5 * scale]);
+        targetCtx.strokeRect(14 * scale, 14 * scale, canvasW - 28 * scale, canvasH - 28 * scale);
+        targetCtx.setLineDash([]);
+        const diamondPositions = [[0.1,0.05],[0.9,0.05],[0.5,0.02],[0.1,0.95],[0.9,0.95],[0.5,0.98],[0.02,0.5],[0.98,0.5]];
+        diamondPositions.forEach(([fx, fy]) => {
+            let dx = fx * canvasW, dy = fy * canvasH, dr = 4 * scale;
+            targetCtx.fillStyle = "#d4a0ff";
+            targetCtx.save(); targetCtx.translate(dx, dy); targetCtx.rotate(Math.PI / 4);
+            targetCtx.fillRect(-dr, -dr, dr * 2, dr * 2); targetCtx.restore();
+        });
+        targetCtx.restore();
+    }
+
+    if (design.isMatcha) {
+        targetCtx.save();
+        targetCtx.strokeStyle = "#7aab6a"; targetCtx.lineWidth = 8 * scale;
+        targetCtx.strokeRect(5 * scale, 5 * scale, canvasW - 10 * scale, canvasH - 10 * scale);
+        targetCtx.strokeStyle = "#a8cc98"; targetCtx.lineWidth = 3 * scale;
+        targetCtx.strokeRect(15 * scale, 15 * scale, canvasW - 30 * scale, canvasH - 30 * scale);
+        targetCtx.strokeStyle = "#c8e0be"; targetCtx.lineWidth = 1 * scale;
+        targetCtx.setLineDash([8 * scale, 4 * scale]);
+        targetCtx.strokeRect(22 * scale, 22 * scale, canvasW - 44 * scale, canvasH - 44 * scale);
+        targetCtx.setLineDash([]);
+        targetCtx.restore();
+    }
+
+    if (design.isBabypink) {
+        targetCtx.save();
+        targetCtx.strokeStyle = "#ffadc5"; targetCtx.lineWidth = 8 * scale;
+        targetCtx.shadowBlur = 10 * scale; targetCtx.shadowColor = "#ff8fb0";
+        targetCtx.strokeRect(5 * scale, 5 * scale, canvasW - 10 * scale, canvasH - 10 * scale);
+        targetCtx.shadowBlur = 0;
+        targetCtx.strokeStyle = "#ffd0e0"; targetCtx.lineWidth = 2 * scale;
+        targetCtx.strokeRect(16 * scale, 16 * scale, canvasW - 32 * scale, canvasH - 32 * scale);
+        const hSpacing = 40 * scale;
+        for (let x = hSpacing; x < canvasW; x += hSpacing) {
+            drawTinyHeart(targetCtx, x, 10 * scale, 5 * scale, "#ffadc5");
+            drawTinyHeart(targetCtx, x, canvasH - 10 * scale, 5 * scale, "#ffadc5");
+        }
+        for (let y = hSpacing; y < canvasH; y += hSpacing) {
+            drawTinyHeart(targetCtx, 10 * scale, y, 5 * scale, "#ffadc5");
+            drawTinyHeart(targetCtx, canvasW - 10 * scale, y, 5 * scale, "#ffadc5");
+        }
+        targetCtx.restore();
+    }
+
+    if (design.isMidnightblue) {
+        targetCtx.save();
+        targetCtx.strokeStyle = "#3a6bc9"; targetCtx.lineWidth = 7 * scale;
+        targetCtx.shadowBlur = 16 * scale; targetCtx.shadowColor = "#5588ee";
+        targetCtx.strokeRect(5 * scale, 5 * scale, canvasW - 10 * scale, canvasH - 10 * scale);
+        targetCtx.shadowBlur = 0;
+        targetCtx.strokeStyle = "#1e3a7a"; targetCtx.lineWidth = 2 * scale;
+        targetCtx.strokeRect(14 * scale, 14 * scale, canvasW - 28 * scale, canvasH - 28 * scale);
+        const moonStars = [[0.08,0.04],[0.92,0.04],[0.5,0.025],[0.08,0.96],[0.92,0.96],[0.04,0.3],[0.04,0.7],[0.96,0.3],[0.96,0.7],[0.25,0.02],[0.75,0.02],[0.25,0.98],[0.75,0.98]];
+        moonStars.forEach(([fx, fy]) => {
+            targetCtx.fillStyle = "#aaccff";
+            drawSmallStar(targetCtx, fx * canvasW, fy * canvasH, 4 * scale);
+        });
+        targetCtx.restore();
+    }
+
+    if (design.isGroovy) {
+        targetCtx.save();
+        const groovyColors = ["#e05c2a", "#f2a123", "#f7d94c", "#5aab45", "#3a8fd9", "#9b59b6"];
+        const gBandW = 5 * scale;
+        groovyColors.forEach((color, i) => {
+            targetCtx.strokeStyle = color; targetCtx.lineWidth = gBandW;
+            const inset = i * gBandW + 2 * scale;
+            targetCtx.strokeRect(inset, inset, canvasW - inset * 2, canvasH - inset * 2);
+        });
+        targetCtx.restore();
+    }
+
+    // 3. PHOTO SLOTS / PHOTO RENDERING
     structure.forEach(fr => {
         let rx = fr.x * scale, ry = fr.y * scale, rw = fr.w * scale, rh = fr.h * scale;
         if (fr.image) {
@@ -1026,83 +1367,107 @@ function renderFrameFullEngine(targetCtx, structure, config, designName, isThumb
             targetCtx.fillStyle = isThumb ? "#666677" : "#1f1f26";
             targetCtx.fillRect(rx, ry, rw, rh);
         }
-        targetCtx.strokeStyle = design.strokeColor; 
+        
+        // Piliin ang tamang frame line border color base sa style
+        if (design.isNeon) {
+            targetCtx.strokeStyle = "#ff007f";
+            targetCtx.shadowBlur = 8 * scale;
+            targetCtx.shadowColor = "#ff007f";
+        } else if (design.isFilm) {
+            targetCtx.strokeStyle = "#333333";
+            targetCtx.shadowBlur = 0;
+        } else {
+            targetCtx.strokeStyle = design.strokeColor;
+            targetCtx.shadowBlur = 0;
+        }
+        
         targetCtx.lineWidth = 2 * scale;
         targetCtx.strokeRect(rx, ry, rw, rh);
+        targetCtx.shadowBlur = 0; // laging i-reset para sa susunod na loops
     });
 
+    // 4. STICKERS TEXT ENGINE (Para lang sa Main Active Canvas)
     if (!isThumb) {
         stickerTextList.forEach(stk => {
             targetCtx.save();
             targetCtx.translate(stk.x * scale, stk.y * scale);
             targetCtx.rotate(stk.angle);
-            
-            // TRANSFORM SCALE
             targetCtx.scale(stk.scaleX, stk.scaleY);
 
             let calculatedW = stk.boxW;
             let calculatedH = stk.boxH;
 
-            // DRAW BOUNDING CONTROLS AT ALL 4-SIDE MULTI STRETCH BUTTONS
             if (activeStep === 3 && activeTargetSticker && activeTargetSticker.id === stk.id) {
                 targetCtx.strokeStyle = "#007aff";
                 targetCtx.lineWidth = 1.5 / Math.max(stk.scaleX, stk.scaleY); 
                 targetCtx.strokeRect(-calculatedW/2, -calculatedH/2, calculatedW, calculatedH);
 
-                // Top stems wire to rotation indicator green ball
                 targetCtx.beginPath();
                 targetCtx.moveTo(0, -calculatedH/2);
                 targetCtx.lineTo(0, -calculatedH/2 - 20);
                 targetCtx.stroke();
 
                 targetCtx.save();
-                
-                // 1. Top Green Circle Rotation Handle
                 targetCtx.translate(0, -calculatedH/2 - 20);
                 targetCtx.scale(1/stk.scaleX, 1/stk.scaleY);
                 targetCtx.fillStyle = "#2ecc71"; targetCtx.beginPath(); targetCtx.arc(0, 0, 7, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
                 targetCtx.restore(); targetCtx.save();
 
-                // 2. Center-Right Blue Stretch Handle
                 targetCtx.translate(calculatedW/2, 0);
                 targetCtx.scale(1/stk.scaleX, 1/stk.scaleY);
                 targetCtx.fillStyle = "#3498db"; targetCtx.beginPath(); targetCtx.arc(0, 0, 7, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
                 targetCtx.restore(); targetCtx.save();
 
-                // 3. Center-Left Blue Stretch Handle (BAGONG BUTTON - LEFT STRETCH)
                 targetCtx.translate(-calculatedW/2, 0);
                 targetCtx.scale(1/stk.scaleX, 1/stk.scaleY);
                 targetCtx.fillStyle = "#3498db"; targetCtx.beginPath(); targetCtx.arc(0, 0, 7, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
                 targetCtx.restore(); targetCtx.save();
 
-                // 4. Bottom-Center Blue Stretch Handle
                 targetCtx.translate(0, calculatedH/2);
                 targetCtx.scale(1/stk.scaleX, 1/stk.scaleY);
                 targetCtx.fillStyle = "#3498db"; targetCtx.beginPath(); targetCtx.arc(0, 0, 7, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
                 targetCtx.restore(); targetCtx.save();
 
-                // 5. Top-Center Blue Stretch Handle (BAGONG BUTTON - TOP STRETCH)
                 targetCtx.translate(0, -calculatedH/2);
                 targetCtx.scale(1/stk.scaleX, 1/stk.scaleY);
                 targetCtx.fillStyle = "#3498db"; targetCtx.beginPath(); targetCtx.arc(0, 0, 7, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
                 targetCtx.restore(); targetCtx.save();
 
-                // 6. Corner Scale Handle (Mababang Kanang Sulok para sa Diagonal Resize)
                 targetCtx.translate(calculatedW/2, calculatedH/2);
                 targetCtx.scale(1/stk.scaleX, 1/stk.scaleY);
                 targetCtx.fillStyle = "#ffffff"; targetCtx.beginPath(); targetCtx.arc(0, 0, 7, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
                 targetCtx.restore();
             }
 
-            // TEXT RENDERING ENGINE
             targetCtx.fillStyle = stk.color;
             targetCtx.textAlign = "center";
             targetCtx.textBaseline = "middle";
             targetCtx.font = `${stk.fontSize * scale}px "${stk.font}", sans-serif`;
             targetCtx.fillText(stk.text, 0, 0);
-            
             targetCtx.restore();
         });
+
+        // 5. CENTER ALIGNMENT GUIDE LINES
+        if (activeStep === 3 && (showCenterGuideX || showCenterGuideY)) {
+            targetCtx.save();
+            targetCtx.strokeStyle = "#ff3b30";
+            targetCtx.lineWidth = 1.2 * scale;
+            targetCtx.setLineDash([6 * scale, 4 * scale]);
+            if (showCenterGuideX) {
+                targetCtx.beginPath();
+                targetCtx.moveTo(canvasW / 2, 0);
+                targetCtx.lineTo(canvasW / 2, canvasH);
+                targetCtx.stroke();
+            }
+            if (showCenterGuideY) {
+                targetCtx.beginPath();
+                targetCtx.moveTo(0, canvasH / 2);
+                targetCtx.lineTo(canvasW, canvasH / 2);
+                targetCtx.stroke();
+            }
+            targetCtx.setLineDash([]);
+            targetCtx.restore();
+        }
     }
 }
 
@@ -1124,14 +1489,14 @@ function triggerMobileSafeDisplay() {
             </head>
             <body>
                 <span class="badge">📸 READY FOR SAVING</span>
-                <h2>Paano I-download sa Phone:</h2>
-                <p><strong>Long Press / Diinan nang matagal</strong> ang larawan sa ibaba at piliin ang <strong>"Save Image"</strong>.</p>
+                <h2>How to Save to Your Phone:</h2>
+                <p><strong>Long press / hold</strong> on the image below and tap <strong>"Save Image"</strong> or <strong>"Add to Photos"</strong>.</p>
                 <img src="${dataUrl}" />
             </body>
             </html>
         `);
         viewWindow.document.close();
-    } else { alert("Pakisuyong i-allow ang pop-ups para ma-save!"); }
+    } else { alert("Please allow pop-ups to save your photo!"); }
 }
 
 function resetEntireBoothProcess() { 
@@ -1143,6 +1508,58 @@ function resetEntireBoothProcess() {
     document.getElementById("stickerTextInput").value = "";
     navigateToScreen(1); 
 }
+
+function drawSmallStar(ctx, x, y, r) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.beginPath();
+    for (let i = 0; i < 5; i++) {
+        let outerAngle = (i * Math.PI * 2) / 5 - Math.PI / 2;
+        let innerAngle = outerAngle + Math.PI / 5;
+        if (i === 0) ctx.moveTo(Math.cos(outerAngle) * r, Math.sin(outerAngle) * r);
+        else ctx.lineTo(Math.cos(outerAngle) * r, Math.sin(outerAngle) * r);
+        ctx.lineTo(Math.cos(innerAngle) * r * 0.45, Math.sin(innerAngle) * r * 0.45);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawTinyHeart(ctx, x, y, r, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, r * 0.3);
+    ctx.bezierCurveTo(-r * 1.2, -r * 0.8, -r * 2, r * 0.5, 0, r * 1.5);
+    ctx.bezierCurveTo(r * 2, r * 0.5, r * 1.2, -r * 0.8, 0, r * 0.3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawLeafCluster(ctx, x, y, scale) {
+    const leafColors = ["#8bc34a", "#aed581", "#c5e1a5"];
+    for (let i = 0; i < 3; i++) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate((i * Math.PI * 2) / 3 + Math.PI / 6);
+        ctx.fillStyle = leafColors[i];
+        ctx.beginPath();
+        ctx.ellipse(0, -7 * scale, 3 * scale, 6 * scale, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = "#6d4c41";
+    ctx.beginPath();
+    ctx.arc(0, 0, 2 * scale, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+}
+
+
 </script>
 </body>
 </html>
