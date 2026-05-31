@@ -58,7 +58,9 @@ body{background:#0b0b0d; color:#f4f4f7; padding:12px; min-height:100vh; display:
 .camera-box {
     position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 12px; border: 2px solid #3f3f52;
 }
-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+/* Hidden video tag because we process frames dynamically */
+#boothVideo { display: none; }
+#livePreviewCanvas { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .camera-ratio-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 2;
@@ -183,7 +185,11 @@ canvas.main-workspace {
         <div class="screen-subtitle">Center your subject inside the box guide</div>
         
         <div class="camera-box">
+            <!-- Background mirror processor video -->
             <video id="boothVideo" autoplay playsinline muted></video>
+            <!-- Real-time WebGL/Canvas simulation pipeline monitor -->
+            <canvas id="livePreviewCanvas"></canvas>
+            
             <div class="camera-ratio-overlay"><div id="dynamicRatioGuide" class="ratio-guide-box"></div></div>
             <div class="shutter-flash" id="countdownLayer">3</div>
         </div>
@@ -197,7 +203,7 @@ canvas.main-workspace {
                     <option value="5">⏱️ 5s Delay</option>
                 </select>
                 
-                <select id="filterDropdown" style="flex:1; padding:10px; background:#22222a; border:1px solid #363644; color:#fff; font-size:12px; border-radius:8px; outline:none;">
+                <select id="filterDropdown" style="flex:1; padding:10px; background:#22222a; border:1px solid #363644; color:#fff; font-size:12px; border-radius:8px; outline:none;" onchange="syncLiveFilterMode()">
                     <option value="none">🎬 Normal Cam</option>
                     <option value="creamy">🍦 Creamy Soft</option>
                     <option value="digicam">📸 Digicam Y2K Flash</option>
@@ -263,7 +269,6 @@ canvas.main-workspace {
                     </div>
                     <button class="btn-add-text" onclick="createNewTextObject()">➕ Add New Text</button>
                     
-                    <!-- 100% WORKING UNDO & REDO STACK CONTROLS -->
                     <div class="history-controls">
                         <button class="btn-history-action" id="canvasUndoButton" onclick="triggerCanvasUndo()" disabled>↩️ Undo</button>
                         <button class="btn-history-action" id="canvasRedoButton" onclick="triggerCanvasRedo()" disabled>↪️ Redo</button>
@@ -303,6 +308,10 @@ const canvas = document.getElementById("boothCanvas");
 const ctx = canvas.getContext("2d");
 const finalCanvas = document.getElementById("boothCanvasFinalCopy");
 
+// Real-time Preview Monitor Elements
+const previewCanvas = document.getElementById("livePreviewCanvas");
+const pCtx = previewCanvas.getContext("2d");
+
 let activeStep = 1;
 let selectedLayoutId = 1;
 let frameBackgroundColor = "#F0F8FF"; 
@@ -310,8 +319,9 @@ let isVideoLive = false;
 let stageObjects = [];
 let activeTargetObject = null;
 let selectedFontFamilyValue = "'Courier Prime', monospace"; 
+let activeLiveFilterMode = "none";
+let globalAnimationFrameTracker = null;
 
-// OPERATIONAL STATE UNDO/REDO ARCHITECTURE
 let historyStateUndoStack = [];
 let historyStateRedoStack = [];
 
@@ -430,7 +440,15 @@ function navigateToScreen(stepNum) {
     document.getElementById(`screen-${stepNum}`).classList.add('active');
     document.getElementById(`ind-${stepNum}`).classList.add('active');
 
-    if (stepNum === 2) { activateUserCameraDevice(); checkCameraSlotStatus(); }
+    if (stepNum === 2) { 
+        activateUserCameraDevice(); 
+    } else {
+        // Stop the live loop if we are not on the camera page to save phone battery
+        if (globalAnimationFrameTracker) {
+            cancelAnimationFrame(globalAnimationFrameTracker);
+            globalAnimationFrameTracker = null;
+        }
+    }
     if (stepNum === 3) { drawBoothCanvas(); }
     if (stepNum === 4) { renderFinalOutput(); }
 }
@@ -446,9 +464,82 @@ function pickLayoutSchema(id, targetElement) {
 
 function activateUserCameraDevice() {
     if (!isVideoLive && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: { width:{ideal:1280}, height:{ideal:960}, facingMode:"user" } })
-            .then(stream => { video.srcObject = stream; video.play(); isVideoLive = true; })
+        navigator.mediaDevices.getUserMedia({ video: { width:{ideal:640}, height:{ideal:480}, facingMode:"user" } })
+            .then(stream => { 
+                video.srcObject = stream; 
+                video.play(); 
+                isVideoLive = true;
+                // Run the stream injector loop when the metadata initializes
+                video.onloadedmetadata = () => {
+                    previewCanvas.width = video.videoWidth;
+                    previewCanvas.height = video.videoHeight;
+                    startLivePreviewLoop();
+                };
+            })
             .catch(() => console.warn("Camera access denied."));
+    } else if (isVideoLive) {
+        startLivePreviewLoop();
+    }
+    checkCameraSlotStatus();
+}
+
+function syncLiveFilterMode() {
+    activeLiveFilterMode = document.getElementById("filterDropdown").value;
+}
+
+// THE LIVE CONSOLE MONITOR INTERCEPTOR (Real-time Pixel Injector Engine)
+function startLivePreviewLoop() {
+    if (!isVideoLive || activeStep !== 2) return;
+    
+    pCtx.save();
+    // Mirror standard camera layout flip
+    pCtx.translate(previewCanvas.width, 0);
+    pCtx.scale(-1, 1);
+    pCtx.drawImage(video, 0, 0, previewCanvas.width, previewCanvas.height);
+    pCtx.restore();
+
+    // Live pixel translation pipeline on top of the loop stream
+    if (activeLiveFilterMode !== "none") {
+        let imgData = pCtx.getImageData(0, 0, previewCanvas.width, previewCanvas.height);
+        applyFilterPixelMath(imgData.data, activeLiveFilterMode);
+        pCtx.putImageData(imgData, 0, 0);
+    }
+
+    globalAnimationFrameTracker = requestAnimationFrame(startLivePreviewLoop);
+}
+
+// Isolated Pixel LUT Processor shared between real-time feed and hardware picture isolation
+function applyFilterPixelMath(data, filterType) {
+    for (let i = 0; i < data.length; i += 4) {
+        let r = data[i], g = data[i+1], b = data[i+2];
+
+        if (filterType === "creamy") {
+            data[i] = Math.min(255, r * 1.1 + 10);   
+            data[i+1] = Math.min(255, g * 1.05 + 5); 
+            data[i+2] = Math.min(255, b * 0.95);     
+        } else if (filterType === "digicam") {
+            data[i] = Math.min(255, r * 1.2 + 15);
+            data[i+1] = Math.min(255, g * 1.2 + 15);
+            data[i+2] = Math.min(255, b * 1.1 + 10);
+        } else if (filterType === "noir" || filterType === "mono") {
+            let gray = 0.299 * r + 0.587 * g + 0.114 * b;
+            if (filterType === "noir") {
+                gray = gray > 128 ? Math.min(255, gray * 1.3) : gray * 0.7;
+            }
+            data[i] = data[i+1] = data[i+2] = gray;
+        } else if (filterType === "fuji") {
+            data[i] = Math.min(255, r * 1.05);
+            data[i+1] = Math.min(255, g * 0.95);
+            data[i+2] = Math.min(255, b * 0.9);
+        } else if (filterType === "warm") {
+            data[i] = Math.min(255, r * 1.2);
+            data[i+1] = Math.min(255, g * 1.1);
+            data[i+2] = Math.min(255, b * 0.9);
+        } else if (filterType === "vintage") {
+            data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
+            data[i+1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
+            data[i+2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
+        }
     }
 }
 
@@ -509,7 +600,7 @@ function fireCameraCountdown() {
             let chosenFilter = document.getElementById("filterDropdown").value;
             let shouldAddDate = document.getElementById("toggleDateStampCheckbox").checked;
             
-            capturePhotoWithHardcodedFilter(nextEmpty.id, chosenFilter, shouldAddDate);
+            isolatePhotoFromActiveCanvasFrame(nextEmpty.id, chosenFilter, shouldAddDate);
             
             setTimeout(() => { 
                 layer.className = "shutter-flash"; 
@@ -519,61 +610,16 @@ function fireCameraCountdown() {
     }, 1000);
 }
 
-// THE GAME CHANGER: CANVAS PIXEL PROCESSING (Gagana kahit saang Phone Chrome/Safari)
-function capturePhotoWithHardcodedFilter(slotId, filterType, shouldAddDate) {
+// Instantly captures exactly what you see live on the monitor stage right now
+function isolatePhotoFromActiveCanvasFrame(slotId, filterType, shouldAddDate) {
     const snapCanvas = document.createElement("canvas");
     const sCtx = snapCanvas.getContext("2d");
     
-    if (isVideoLive && video.videoWidth > 0) {
-        snapCanvas.width = video.videoWidth; 
-        snapCanvas.height = video.videoHeight;
-        sCtx.translate(snapCanvas.width, 0); 
-        sCtx.scale(-1, 1);
-        sCtx.drawImage(video, 0, 0);
-    } else {
-        snapCanvas.width = 640; snapCanvas.height = 480;
-        sCtx.fillStyle = "#555"; sCtx.fillRect(0, 0, 640, 480);
-    }
-
-    // Direktang minamanipula ang Pixels sa Canvas para sa Mobile Engines
-    if (filterType !== "none") {
-        let imgData = sCtx.getImageData(0, 0, snapCanvas.width, snapCanvas.height);
-        let data = imgData.data;
-
-        for (let i = 0; i < data.length; i += 4) {
-            let r = data[i], g = data[i+1], b = data[i+2];
-
-            if (filterType === "creamy") {
-                data[i] = Math.min(255, r * 1.1 + 10);   
-                data[i+1] = Math.min(255, g * 1.05 + 5); 
-                data[i+2] = Math.min(255, b * 0.95);     
-            } else if (filterType === "digicam") {
-                let val = (r + g + b) / 3;
-                data[i] = Math.min(255, r * 1.2 + 15);
-                data[i+1] = Math.min(255, g * 1.2 + 15);
-                data[i+2] = Math.min(255, b * 1.1 + 10);
-            } else if (filterType === "noir" || filterType === "mono") {
-                let gray = 0.299 * r + 0.587 * g + 0.114 * b;
-                if (filterType === "noir") {
-                    gray = gray > 128 ? Math.min(255, gray * 1.3) : gray * 0.7;
-                }
-                data[i] = data[i+1] = data[i+2] = gray;
-            } else if (filterType === "fuji") {
-                data[i] = Math.min(255, r * 1.05);
-                data[i+1] = Math.min(255, g * 0.95);
-                data[i+2] = Math.min(255, b * 0.9);
-            } else if (filterType === "warm") {
-                data[i] = Math.min(255, r * 1.2);
-                data[i+1] = Math.min(255, g * 1.1);
-                data[i+2] = Math.min(255, b * 0.9);
-            } else if (filterType === "vintage") {
-                data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
-                data[i+1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
-                data[i+2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
-            }
-        }
-        sCtx.putImageData(imgData, 0, 0);
-    }
+    snapCanvas.width = previewCanvas.width;
+    snapCanvas.height = previewCanvas.height;
+    
+    // Direct hardware frame capture clone
+    sCtx.drawImage(previewCanvas, 0, 0);
 
     if (shouldAddDate) {
         sCtx.font = `bold ${Math.max(22, snapCanvas.width * 0.045)}px "Courier Prime", monospace`;
@@ -609,7 +655,6 @@ function drawBoothCanvas(targetCtx = ctx, isFinal = false) {
         } else {
             targetCtx.fillStyle = "#22222a"; targetCtx.fillRect(fr.x, fr.y, fr.w, fr.h);
         }
-        // Bleed Edge Pixel Fix para sa iOS Safari white gaps
         targetCtx.strokeStyle = frameBackgroundColor; targetCtx.lineWidth = 2; targetCtx.strokeRect(fr.x, fr.y, fr.w, fr.h);
     });
 
