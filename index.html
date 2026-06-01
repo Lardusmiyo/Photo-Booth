@@ -94,7 +94,7 @@ body{background:#0b0b0d; color:#f4f4f7; padding:12px; min-height:100vh; display:
     width: 100%; display: flex; flex-direction: column; align-items: center; overflow: auto; padding: 4px; margin-bottom: 12px; position: relative;
 }
 canvas.main-workspace {
-    background: #fff; border-radius: 8px; display: block; box-shadow: 0 6px 20px rgba(0,0,0,0.5); width: 260px !important; height: auto !important;
+    background: #fff; border-radius: 8px; display: block; box-shadow: 0 6px 20px rgba(0,0,0,0.5); width: 260px !important; height: auto !important; touch-action: none;
 }
 
 .history-control-bar {
@@ -267,21 +267,21 @@ canvas.main-workspace {
                 
                 <select id="filterDropdown" style="flex:1; padding:10px; background:#22222a; border:1px solid #363644; color:#fff; font-size:12px; border-radius:8px; outline:none;" onchange="syncLiveFilterMode()">
                     <option value="none">🎬 Normal</option>
-                    <option value="creamy">🍦 Creamy Soft</option>
-                    <option value="cyber">🌆 Retro Cyber</option>
-                    <option value="noir">⚫ Dramatic Noir</option>
-                    <option value="digicam">📸 Digicam Flash</option>
-                    <option value="fuji">🎞️ Fuji Chrome</option>
-                    <option value="sepia">⏳ Vintage Sepia</option>
-                    <option value="velvet">🔥 Velvet Warm</option>
-                    <option value="polar">❄️ Cool Polar</option>
-                    <option value="lomo">🎡 Lomo Vivid</option>
-                    <option value="vivid">🌈 Super Vivid</option>
-                    <option value="matte">🎨 Soft Matte</option>
                     <option value="bronze">🍂 Bronze Tone</option>
-                    <option value="dreamy">✨ Dreamy Glow</option>
                     <option value="candy">🍭 Candy Pop</option>
+                    <option value="polar">❄️ Cool Polar</option>
+                    <option value="creamy">🍦 Creamy Soft</option>
+                    <option value="digicam">📸 Digicam Flash</option>
+                    <option value="noir">⚫ Dramatic Noir</option>
+                    <option value="dreamy">✨ Dreamy Glow</option>
+                    <option value="fuji">🎞️ Fuji Chrome</option>
+                    <option value="lomo">🎡 Lomo Vivid</option>
+                    <option value="cyber">🌆 Retro Cyber</option>
+                    <option value="matte">🎨 Soft Matte</option>
+                    <option value="vivid">🌈 Super Vivid</option>
                     <option value="teal">🌊 Teal & Orange</option>
+                    <option value="velvet">🔥 Velvet Warm</option>
+                    <option value="sepia">⏳ Vintage Sepia</option>
                 </select>
             </div>
             <div style="display:flex; gap:6px; align-items:center;">
@@ -333,26 +333,51 @@ canvas.main-workspace {
             <div class="ui-controls-row">
                 <div class="font-dropdown-wrapper">
                     <select id="stickerFontInput" class="font-dropdown-select" onchange="updateLiveSelectedFontInline()">
-                        <option value="Dancing Script" style="font-family: 'Dancing Script';">Dancing Script (Cursive)</option>
-                        <option value="Great Vibes" style="font-family: 'Great Vibes';">Great Vibes (Elegant)</option>
                         <option value="Alex Brush" style="font-family: 'Alex Brush';">Alex Brush (Cursive)</option>
+                        <option value="Allura" style="font-family: 'Allura';">Allura (Cursive)</option>
+                        <option value="Antonio" style="font-family: 'Antonio'; font-weight: bold;">Antonio Bold</option>
+                        <option value="Dancing Script" style="font-family: 'Dancing Script';">Dancing Script (Cursive)</option>
+                        <option value="Fredoka" style="font-family: 'Fredoka';">Fredoka Rounded</option>
+                        <option value="Great Vibes" style="font-family: 'Great Vibes';">Great Vibes (Elegant)</option>
+                        <option value="Monsieur La Doulaise" style="font-family: 'Monsieur La Doulaise';">M. La Doulaise</option>
+                        <option value="Orbitron" style="font-family: 'Orbitron'; font-weight: bold;">Orbitron Future</option>
                         <option value="Pacifico" style="font-family: 'Pacifico';">Pacifico (Retro Pop)</option>
                         <option value="Parisienne" style="font-family: 'Parisienne';">Parisienne (Fancy)</option>
-                        <option value="Allura" style="font-family: 'Allura';">Allura (Cursive)</option>
                         <option value="Pinyon Script" style="font-family: 'Pinyon Script';">Pinyon Script</option>
-                        <option value="Monsieur La Doulaise" style="font-family: 'Monsieur La Doulaise';">M. La Doulaise</option>
                         <option value="Courier Prime" style="font-family: 'Courier Prime'; font-weight: bold;">📟 Retro Monospace</option>
-                        <option value="Antonio" style="font-family: 'Antonio'; font-weight: bold;">Antonio Bold</option>
-                        <option value="Fredoka" style="font-family: 'Fredoka';">Fredoka Rounded</option>
-                        <option value="Orbitron" style="font-family: 'Orbitron'; font-weight: bold;">Orbitron Future</option>
                         <option value="Righteous" style="font-family: 'Righteous';">Righteous Modern</option>
                     </select>
                 </div>
-                <div class="color-picker-wrapper">
+                <div class="color-picker-wrapper" title="Text fill color">
                     <input type="color" id="stickerColorInput" value="#ffffff" onchange="updateLiveSelectedFontInline()">
                 </div>
+                <div class="color-picker-wrapper" title="Outline color" style="border-color:#007aff22;">
+                    <input type="color" id="stickerStrokeColorInput" value="#000000" onchange="updateLiveSelectedFontInline()">
+                </div>
             </div>
-            <button class="btn-add-text-blue" onclick="addStickerTextToCanvas()"><span class="plus-icon">+</span> Add New Text</button>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                <span style="font-size:11px; color:#8a8d9a; font-weight:700; white-space:nowrap;">OUTLINE</span>
+                <input type="range" id="stickerStrokeWidthSlider" min="0" max="20" value="0" step="0.5"
+                    oninput="applyLiveStroke(this.value)" onchange="pushActiveStateToTimeline()"
+                    style="flex:1; accent-color:#007aff; cursor:pointer; height:4px;">
+                <span id="stickerStrokeWidthLabel" style="font-size:12px; font-weight:700; color:#007aff; min-width:28px; text-align:right;">0</span>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:6px; background:#252632; border:1px solid #323446; border-radius:6px; padding:6px 10px; flex-shrink:0;">
+                    <label style="font-size:11px; color:#8a8d9a; font-weight:700; white-space:nowrap;">Size</label>
+                    <input type="number" id="stickerFontSizeInput" min="10" max="200" value="36"
+                        style="width:52px; background:transparent; border:none; color:#fff; font-size:14px; font-weight:700; outline:none; text-align:center;"
+                        oninput="applyLiveFontSize(this.value)" onchange="pushActiveStateToTimeline()">
+                </div>
+                <button class="btn-add-text-blue" style="flex:1;" onclick="addStickerTextToCanvas()"><span class="plus-icon">+</span> Add New Text</button>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                <span style="font-size:11px; color:#8a8d9a; font-weight:700; white-space:nowrap;">RESIZE</span>
+                <input type="range" id="stickerFontSizeSlider" min="10" max="200" value="36"
+                    oninput="applyLiveFontSize(this.value)" onchange="pushActiveStateToTimeline()"
+                    style="flex:1; accent-color:#007aff; cursor:pointer; height:4px;">
+                <span id="stickerFontSizeLabel" style="font-size:12px; font-weight:700; color:#007aff; min-width:30px; text-align:right;">36</span>
+            </div>
         </div>
 
         <div class="canvas-scroll-container">
@@ -417,9 +442,7 @@ canvas.main-workspace {
                 style="display:none; background:#1e1a2a; border-color:#a78bfa; color:#a78bfa;">↪ Redo</button>
             <button class="btn-custom-clear" onclick="addCustomSlotByButton()"
                 style="background:#1a2f1a; border-color:#34c759; color:#34c759;">＋ Add Slot</button>
-            <button class="btn-custom-clear" onclick="addFullCoverSlot()"
-                title="Add a slot covering the full image"
-                style="background:#1a1a30; border-color:#af52de; color:#af52de;">⬛ Full Cover</button>
+
             <button class="btn-custom-clear" id="customDuplicateBtn" onclick="duplicateCustomSlot()"
                 style="display:none; background:#1a2638; border-color:#007aff; color:#007aff;">⧉ Duplicate</button>
             <button class="btn-custom-clear" id="customSnapBtn" onclick="toggleCustomSnap()"
@@ -605,12 +628,44 @@ function updateDropdownVisualStyles() {
     selector.style.fontFamily = selector.value;
 }
 
+function applyLiveFontSize(val) {
+    let size = Math.max(10, Math.min(200, parseInt(val) || 10));
+    let numInput = document.getElementById("stickerFontSizeInput");
+    let slider = document.getElementById("stickerFontSizeSlider");
+    let label = document.getElementById("stickerFontSizeLabel");
+    if (numInput) numInput.value = size;
+    if (slider) slider.value = size;
+    if (label) label.textContent = size;
+    if (activeTargetSticker) {
+        activeTargetSticker.fontSize = size;
+        let tempCtx = step3Canvas.getContext("2d");
+        tempCtx.font = `${size}px "${activeTargetSticker.font}"`;
+        activeTargetSticker.boxW = (tempCtx.measureText(activeTargetSticker.text).width || 100) + 24;
+        activeTargetSticker.boxH = (size * 1.2) + 12;
+        triggerLiveOverlayRedraw();
+    }
+}
+
+function applyLiveStroke(val) {
+    let sw = Math.max(0, parseFloat(val) || 0);
+    let slider = document.getElementById("stickerStrokeWidthSlider");
+    let label = document.getElementById("stickerStrokeWidthLabel");
+    if (slider) slider.value = sw;
+    if (label) label.textContent = sw;
+    if (activeTargetSticker) {
+        activeTargetSticker.strokeWidth = sw;
+        activeTargetSticker.strokeColor = document.getElementById("stickerStrokeColorInput").value || "#000000";
+        triggerLiveOverlayRedraw();
+    }
+}
+
 function updateLiveSelectedFontInline() {
     updateDropdownVisualStyles();
     if (activeTargetSticker) {
         pushActiveStateToTimeline(); 
         activeTargetSticker.font = document.getElementById("stickerFontInput").value;
         activeTargetSticker.color = document.getElementById("stickerColorInput").value;
+        activeTargetSticker.strokeColor = document.getElementById("stickerStrokeColorInput").value || "#000000";
         
         let tempCtx = step3Canvas.getContext("2d");
         tempCtx.font = `${activeTargetSticker.fontSize}px "${activeTargetSticker.font}"`;
@@ -707,19 +762,23 @@ function addStickerTextToCanvas() {
     
     let activeConfig = templateRegistry[selectedLayoutId];
     let selectedFont = document.getElementById("stickerFontInput").value;
+    let sizeInput = document.getElementById("stickerFontSizeInput");
+    let chosenSize = sizeInput ? Math.max(10, Math.min(200, parseInt(sizeInput.value) || 36)) : 36;
     
     let tempCtx = step3Canvas.getContext("2d");
-    tempCtx.font = `36px "${selectedFont}"`;
+    tempCtx.font = `${chosenSize}px "${selectedFont}"`;
     let textWidth = tempCtx.measureText(rawStr).width || 150;
 
     let newSticker = {
         id: Date.now(),
         text: rawStr,
         color: document.getElementById("stickerColorInput").value,
+        strokeColor: document.getElementById("stickerStrokeColorInput").value,
+        strokeWidth: parseFloat(document.getElementById("stickerStrokeWidthSlider").value) || 0,
         font: selectedFont,
         x: activeConfig.w / 2,
         y: activeConfig.h / 2,
-        fontSize: 36,
+        fontSize: chosenSize,
         angle: 0, 
         scaleX: 1.0, 
         scaleY: 1.0, 
@@ -729,6 +788,10 @@ function addStickerTextToCanvas() {
     
     stickerTextList.push(newSticker);
     activeTargetSticker = newSticker;
+    let addedSlider = document.getElementById("stickerFontSizeSlider");
+    let addedLabel = document.getElementById("stickerFontSizeLabel");
+    if (addedSlider) addedSlider.value = newSticker.fontSize;
+    if (addedLabel) addedLabel.textContent = Math.round(newSticker.fontSize);
     triggerLiveOverlayRedraw();
 }
 
@@ -949,18 +1012,17 @@ function setupStickerDragAndTransformListeners() {
         }
         lastTapTime = currentTime;
 
-        for (let i = stickerTextList.length - 1; i >= 0; i--) {
-            let stk = stickerTextList[i];
+        // Check handles only for the currently active sticker
+        if (activeTargetSticker) {
+            let stk = activeTargetSticker;
             let cos = Math.cos(stk.angle);
             let sin = Math.sin(stk.angle);
-
             let rotLocalX = 0;
             let rotLocalY = -stk.boxH / 2 - 22;
             let rotGlobalX = stk.x + (rotLocalX * cos - rotLocalY * sin);
             let rotGlobalY = stk.y + (rotLocalX * sin + rotLocalY * cos);
             if (Math.hypot(coords.x - rotGlobalX, coords.y - rotGlobalY) < 30) {
                 pushActiveStateToTimeline();
-                activeTargetSticker = stk;
                 transformActionNode = "rotate";
                 initialRotationAngle = stk.angle;
                 initialMouseAngle = Math.atan2(coords.y - stk.y, coords.x - stk.x);
@@ -968,82 +1030,68 @@ function setupStickerDragAndTransformListeners() {
                 e.preventDefault();
                 return;
             }
-
-            let rStretchLocalX = stk.boxW / 2;
+            let rStretchLocalX = stk.boxW / 2 * stk.scaleX;
             let rStretchLocalY = 0;
             let rStretchGlobalX = stk.x + (rStretchLocalX * cos - rStretchLocalY * sin);
             let rStretchGlobalY = stk.y + (rStretchLocalX * sin + rStretchLocalY * cos);
             if (Math.hypot(coords.x - rStretchGlobalX, coords.y - rStretchGlobalY) < 30) {
                 pushActiveStateToTimeline();
-                activeTargetSticker = stk;
                 transformActionNode = "stretchRight";
-                let dx = coords.x - stk.x;
-                let dy = coords.y - stk.y;
-                initialMouseAngle = dx * cos + dy * sin; 
+                let dx = coords.x - stk.x; let dy = coords.y - stk.y;
+                initialMouseAngle = dx * cos + dy * sin;
                 initialScaleX = stk.scaleX;
                 syncStickerPanelSettings(stk);
                 e.preventDefault();
                 return;
             }
-
-            let lStretchLocalX = -stk.boxW / 2;
+            let lStretchLocalX = -stk.boxW / 2 * stk.scaleX;
             let lStretchLocalY = 0;
             let lStretchGlobalX = stk.x + (lStretchLocalX * cos - lStretchLocalY * sin);
             let lStretchGlobalY = stk.y + (lStretchLocalX * sin + lStretchLocalY * cos);
             if (Math.hypot(coords.x - lStretchGlobalX, coords.y - lStretchGlobalY) < 30) {
                 pushActiveStateToTimeline();
-                activeTargetSticker = stk;
                 transformActionNode = "stretchLeft";
-                let dx = coords.x - stk.x;
-                let dy = coords.y - stk.y;
-                initialMouseAngle = dx * cos + dy * sin; 
+                let dx = coords.x - stk.x; let dy = coords.y - stk.y;
+                initialMouseAngle = dx * cos + dy * sin;
                 initialScaleX = stk.scaleX;
                 syncStickerPanelSettings(stk);
                 e.preventDefault();
                 return;
             }
-
             let bStretchLocalX = 0;
-            let bStretchLocalY = stk.boxH / 2;
+            let bStretchLocalY = stk.boxH / 2 * stk.scaleY;
             let bStretchGlobalX = stk.x + (bStretchLocalX * cos - bStretchLocalY * sin);
             let bStretchGlobalY = stk.y + (bStretchLocalX * sin + bStretchLocalY * cos);
             if (Math.hypot(coords.x - bStretchGlobalX, coords.y - bStretchGlobalY) < 30) {
                 pushActiveStateToTimeline();
-                activeTargetSticker = stk;
                 transformActionNode = "stretchBottom";
-                let dx = coords.x - stk.x;
-                let dy = coords.y - stk.y;
-                initialMouseAngle = -dx * sin + dy * cos; 
+                let dx = coords.x - stk.x; let dy = coords.y - stk.y;
+                initialMouseAngle = -dx * sin + dy * cos;
                 initialScaleY = stk.scaleY;
                 syncStickerPanelSettings(stk);
                 e.preventDefault();
                 return;
             }
-
             let tStretchLocalX = 0;
-            let tStretchLocalY = -stk.boxH / 2;
+            let tStretchLocalY = -stk.boxH / 2 * stk.scaleY;
             let tStretchGlobalX = stk.x + (tStretchLocalX * cos - tStretchLocalY * sin);
             let tStretchGlobalY = stk.y + (tStretchLocalX * sin + tStretchLocalY * cos);
             if (Math.hypot(coords.x - tStretchGlobalX, coords.y - tStretchGlobalY) < 30) {
                 pushActiveStateToTimeline();
-                activeTargetSticker = stk;
                 transformActionNode = "stretchTop";
-                let dx = coords.x - stk.x;
-                let dy = coords.y - stk.y;
-                initialMouseAngle = -dx * sin + dy * cos; 
+                let dx = coords.x - stk.x; let dy = coords.y - stk.y;
+                initialMouseAngle = -dx * sin + dy * cos;
                 initialScaleY = stk.scaleY;
                 syncStickerPanelSettings(stk);
                 e.preventDefault();
                 return;
             }
-
-            let scaleLocalX = stk.boxW / 2;
-            let scaleLocalY = stk.boxH / 2;
-            let scaleGlobalX = stk.x + (scaleLocalX * cos - scaleLocalY * sin);
-            let scaleGlobalY = stk.y + (scaleLocalX * sin + scaleLocalY * cos);
-            if (Math.hypot(coords.x - scaleGlobalX, coords.y - scaleGlobalY) < 30) {
+            let scaleLocalX2 = stk.boxW / 2 * stk.scaleX;
+            let scaleLocalY2 = stk.boxH / 2 * stk.scaleY;
+            let scaleGlobalX2 = stk.x + (scaleLocalX2 * cos - scaleLocalY2 * sin);
+            let scaleGlobalY2 = stk.y + (scaleLocalX2 * sin + scaleLocalY2 * cos);
+            if (Math.hypot(coords.x - scaleGlobalX2, coords.y - scaleGlobalY2) < 30) {
                 pushActiveStateToTimeline();
-                activeTargetSticker = stk;
                 transformActionNode = "diagonalScale";
                 initialMouseAngle = Math.hypot(coords.x - stk.x, coords.y - stk.y);
                 initialBaseSize = stk.fontSize;
@@ -1051,6 +1099,13 @@ function setupStickerDragAndTransformListeners() {
                 e.preventDefault();
                 return;
             }
+        }
+
+        // Check ALL stickers for body hit (drag — works even without prior selection)
+        for (let i = stickerTextList.length - 1; i >= 0; i--) {
+            let stk = stickerTextList[i];
+            let cos = Math.cos(stk.angle);
+            let sin = Math.sin(stk.angle);
 
             if (checkIfPointIsInsideStickerBox(coords.x, coords.y, stk)) {
                 pushActiveStateToTimeline();
@@ -1073,6 +1128,7 @@ function setupStickerDragAndTransformListeners() {
 
     function handleMove(e) {
         if (!activeTargetSticker || activeStep !== 3) return;
+        if (transformActionNode === "none") return;
         let coords = getCanvasCoordinates(e);
         let cos = Math.cos(activeTargetSticker.angle);
         let sin = Math.sin(activeTargetSticker.angle);
@@ -1153,6 +1209,20 @@ function setupStickerDragAndTransformListeners() {
         textInputField.value = stk.text;
         document.getElementById("stickerFontInput").value = stk.font;
         document.getElementById("stickerColorInput").value = stk.color;
+        let sizeVal = Math.round(stk.fontSize);
+        let sizeInput = document.getElementById("stickerFontSizeInput");
+        let sizeSlider = document.getElementById("stickerFontSizeSlider");
+        let sizeLabel = document.getElementById("stickerFontSizeLabel");
+        if (sizeInput) sizeInput.value = sizeVal;
+        if (sizeSlider) sizeSlider.value = sizeVal;
+        if (sizeLabel) sizeLabel.textContent = sizeVal;
+        let strokeW = stk.strokeWidth || 0;
+        let strokeColorEl = document.getElementById("stickerStrokeColorInput");
+        let strokeSlider = document.getElementById("stickerStrokeWidthSlider");
+        let strokeLabel = document.getElementById("stickerStrokeWidthLabel");
+        if (strokeColorEl) strokeColorEl.value = stk.strokeColor || "#000000";
+        if (strokeSlider) strokeSlider.value = strokeW;
+        if (strokeLabel) strokeLabel.textContent = strokeW;
         updateDropdownVisualStyles();
     }
 
@@ -1582,10 +1652,17 @@ function renderFrameFullEngine(targetCtx, structure, config, designName, isThumb
                 targetCtx.restore();
             }
 
-            targetCtx.fillStyle = stk.color;
             targetCtx.textAlign = "center";
             targetCtx.textBaseline = "middle";
             targetCtx.font = `${stk.fontSize * scale}px "${stk.font}", sans-serif`;
+            let sw = (stk.strokeWidth || 0) * scale;
+            if (sw > 0) {
+                targetCtx.lineJoin = "round";
+                targetCtx.lineWidth = sw * 2;
+                targetCtx.strokeStyle = stk.strokeColor || "#000000";
+                targetCtx.strokeText(stk.text, 0, 0);
+            }
+            targetCtx.fillStyle = stk.color;
             targetCtx.fillText(stk.text, 0, 0);
             targetCtx.restore();
         });
