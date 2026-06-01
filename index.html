@@ -416,7 +416,10 @@ canvas.main-workspace {
             <button class="btn-custom-clear" id="customRedoBtn" onclick="redoCustom()"
                 style="display:none; background:#1e1a2a; border-color:#a78bfa; color:#a78bfa;">↪ Redo</button>
             <button class="btn-custom-clear" onclick="addCustomSlotByButton()"
-                style="background:#1a2f1a; border-color:#34c759; color:#34c759;">＋ Add Photo Slot</button>
+                style="background:#1a2f1a; border-color:#34c759; color:#34c759;">＋ Add Slot</button>
+            <button class="btn-custom-clear" onclick="addFullCoverSlot()"
+                title="Add a slot covering the full image"
+                style="background:#1a1a30; border-color:#af52de; color:#af52de;">⬛ Full Cover</button>
             <button class="btn-custom-clear" id="customDuplicateBtn" onclick="duplicateCustomSlot()"
                 style="display:none; background:#1a2638; border-color:#007aff; color:#007aff;">⧉ Duplicate</button>
             <button class="btn-custom-clear" id="customSnapBtn" onclick="toggleCustomSnap()"
@@ -457,6 +460,7 @@ let stickerTextList = [];
 let activeTargetSticker = null;
 let transformActionNode = "none"; 
 let mouseOffsetPointer = { x: 0, y: 0 };
+let stickerMoveStartCoords = { x: 0, y: 0 };
 let initialRotationAngle = 0;
 let initialMouseAngle = 0;
 let lastTapTime = 0;
@@ -954,7 +958,7 @@ function setupStickerDragAndTransformListeners() {
             let rotLocalY = -stk.boxH / 2 - 22;
             let rotGlobalX = stk.x + (rotLocalX * cos - rotLocalY * sin);
             let rotGlobalY = stk.y + (rotLocalX * sin + rotLocalY * cos);
-            if (Math.hypot(coords.x - rotGlobalX, coords.y - rotGlobalY) < 18) {
+            if (Math.hypot(coords.x - rotGlobalX, coords.y - rotGlobalY) < 30) {
                 pushActiveStateToTimeline();
                 activeTargetSticker = stk;
                 transformActionNode = "rotate";
@@ -969,7 +973,7 @@ function setupStickerDragAndTransformListeners() {
             let rStretchLocalY = 0;
             let rStretchGlobalX = stk.x + (rStretchLocalX * cos - rStretchLocalY * sin);
             let rStretchGlobalY = stk.y + (rStretchLocalX * sin + rStretchLocalY * cos);
-            if (Math.hypot(coords.x - rStretchGlobalX, coords.y - rStretchGlobalY) < 18) {
+            if (Math.hypot(coords.x - rStretchGlobalX, coords.y - rStretchGlobalY) < 30) {
                 pushActiveStateToTimeline();
                 activeTargetSticker = stk;
                 transformActionNode = "stretchRight";
@@ -986,7 +990,7 @@ function setupStickerDragAndTransformListeners() {
             let lStretchLocalY = 0;
             let lStretchGlobalX = stk.x + (lStretchLocalX * cos - lStretchLocalY * sin);
             let lStretchGlobalY = stk.y + (lStretchLocalX * sin + lStretchLocalY * cos);
-            if (Math.hypot(coords.x - lStretchGlobalX, coords.y - lStretchGlobalY) < 18) {
+            if (Math.hypot(coords.x - lStretchGlobalX, coords.y - lStretchGlobalY) < 30) {
                 pushActiveStateToTimeline();
                 activeTargetSticker = stk;
                 transformActionNode = "stretchLeft";
@@ -1003,7 +1007,7 @@ function setupStickerDragAndTransformListeners() {
             let bStretchLocalY = stk.boxH / 2;
             let bStretchGlobalX = stk.x + (bStretchLocalX * cos - bStretchLocalY * sin);
             let bStretchGlobalY = stk.y + (bStretchLocalX * sin + bStretchLocalY * cos);
-            if (Math.hypot(coords.x - bStretchGlobalX, coords.y - bStretchGlobalY) < 18) {
+            if (Math.hypot(coords.x - bStretchGlobalX, coords.y - bStretchGlobalY) < 30) {
                 pushActiveStateToTimeline();
                 activeTargetSticker = stk;
                 transformActionNode = "stretchBottom";
@@ -1020,7 +1024,7 @@ function setupStickerDragAndTransformListeners() {
             let tStretchLocalY = -stk.boxH / 2;
             let tStretchGlobalX = stk.x + (tStretchLocalX * cos - tStretchLocalY * sin);
             let tStretchGlobalY = stk.y + (tStretchLocalX * sin + tStretchLocalY * cos);
-            if (Math.hypot(coords.x - tStretchGlobalX, coords.y - tStretchGlobalY) < 18) {
+            if (Math.hypot(coords.x - tStretchGlobalX, coords.y - tStretchGlobalY) < 30) {
                 pushActiveStateToTimeline();
                 activeTargetSticker = stk;
                 transformActionNode = "stretchTop";
@@ -1037,7 +1041,7 @@ function setupStickerDragAndTransformListeners() {
             let scaleLocalY = stk.boxH / 2;
             let scaleGlobalX = stk.x + (scaleLocalX * cos - scaleLocalY * sin);
             let scaleGlobalY = stk.y + (scaleLocalX * sin + scaleLocalY * cos);
-            if (Math.hypot(coords.x - scaleGlobalX, coords.y - scaleGlobalY) < 18) {
+            if (Math.hypot(coords.x - scaleGlobalX, coords.y - scaleGlobalY) < 30) {
                 pushActiveStateToTimeline();
                 activeTargetSticker = stk;
                 transformActionNode = "diagonalScale";
@@ -1051,9 +1055,10 @@ function setupStickerDragAndTransformListeners() {
             if (checkIfPointIsInsideStickerBox(coords.x, coords.y, stk)) {
                 pushActiveStateToTimeline();
                 activeTargetSticker = stk;
-                transformActionNode = "move";
+                transformActionNode = "pendingMove";
                 mouseOffsetPointer.x = coords.x - stk.x;
                 mouseOffsetPointer.y = coords.y - stk.y;
+                stickerMoveStartCoords = { x: coords.x, y: coords.y };
                 syncStickerPanelSettings(stk);
                 e.preventDefault();
                 return;
@@ -1072,6 +1077,11 @@ function setupStickerDragAndTransformListeners() {
         let cos = Math.cos(activeTargetSticker.angle);
         let sin = Math.sin(activeTargetSticker.angle);
 
+        if (transformActionNode === "pendingMove") {
+            const dist = Math.hypot(coords.x - stickerMoveStartCoords.x, coords.y - stickerMoveStartCoords.y);
+            if (dist < 6) return;
+            transformActionNode = "move";
+        }
         if (transformActionNode === "move") {
             activeTargetSticker.x = coords.x - mouseOffsetPointer.x;
             activeTargetSticker.y = coords.y - mouseOffsetPointer.y;
@@ -1129,7 +1139,14 @@ function setupStickerDragAndTransformListeners() {
         e.preventDefault();
     }
 
-    function handleEnd() { transformActionNode = "none"; showCenterGuideX = false; showCenterGuideY = false; }
+    function handleEnd() {
+        if (transformActionNode === "pendingMove") {
+            triggerLiveOverlayRedraw();
+        }
+        transformActionNode = "none";
+        showCenterGuideX = false;
+        showCenterGuideY = false;
+    }
 
     function syncStickerPanelSettings(stk) {
         let textInputField = document.getElementById("stickerTextInput");
@@ -1536,32 +1553,32 @@ function renderFrameFullEngine(targetCtx, structure, config, designName, isThumb
                 targetCtx.save();
                 targetCtx.translate(0, -calculatedH/2 - 20);
                 targetCtx.scale(1/stk.scaleX, 1/stk.scaleY);
-                targetCtx.fillStyle = "#2ecc71"; targetCtx.beginPath(); targetCtx.arc(0, 0, 7, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
+                targetCtx.fillStyle = "#2ecc71"; targetCtx.beginPath(); targetCtx.arc(0, 0, 11, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
                 targetCtx.restore(); targetCtx.save();
 
                 targetCtx.translate(calculatedW/2, 0);
                 targetCtx.scale(1/stk.scaleX, 1/stk.scaleY);
-                targetCtx.fillStyle = "#3498db"; targetCtx.beginPath(); targetCtx.arc(0, 0, 7, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
+                targetCtx.fillStyle = "#3498db"; targetCtx.beginPath(); targetCtx.arc(0, 0, 11, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
                 targetCtx.restore(); targetCtx.save();
 
                 targetCtx.translate(-calculatedW/2, 0);
                 targetCtx.scale(1/stk.scaleX, 1/stk.scaleY);
-                targetCtx.fillStyle = "#3498db"; targetCtx.beginPath(); targetCtx.arc(0, 0, 7, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
+                targetCtx.fillStyle = "#3498db"; targetCtx.beginPath(); targetCtx.arc(0, 0, 11, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
                 targetCtx.restore(); targetCtx.save();
 
                 targetCtx.translate(0, calculatedH/2);
                 targetCtx.scale(1/stk.scaleX, 1/stk.scaleY);
-                targetCtx.fillStyle = "#3498db"; targetCtx.beginPath(); targetCtx.arc(0, 0, 7, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
+                targetCtx.fillStyle = "#3498db"; targetCtx.beginPath(); targetCtx.arc(0, 0, 11, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
                 targetCtx.restore(); targetCtx.save();
 
                 targetCtx.translate(0, -calculatedH/2);
                 targetCtx.scale(1/stk.scaleX, 1/stk.scaleY);
-                targetCtx.fillStyle = "#3498db"; targetCtx.beginPath(); targetCtx.arc(0, 0, 7, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
+                targetCtx.fillStyle = "#3498db"; targetCtx.beginPath(); targetCtx.arc(0, 0, 11, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
                 targetCtx.restore(); targetCtx.save();
 
                 targetCtx.translate(calculatedW/2, calculatedH/2);
                 targetCtx.scale(1/stk.scaleX, 1/stk.scaleY);
-                targetCtx.fillStyle = "#ffffff"; targetCtx.beginPath(); targetCtx.arc(0, 0, 7, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
+                targetCtx.fillStyle = "#ffffff"; targetCtx.beginPath(); targetCtx.arc(0, 0, 11, 0, Math.PI*2); targetCtx.fill(); targetCtx.stroke();
                 targetCtx.restore();
             }
 
@@ -1761,6 +1778,16 @@ function addCustomSlotByButton() {
     const sx = snapG(Math.round((customTemplateW - sw) / 2));
     const sy = snapG(Math.round((customTemplateH - sh) / 2));
     const newSlot = { id: customNextSlotId++, x: sx, y: sy, w: sw, h: sh, image: null };
+    customSlots.push(newSlot);
+    customSelectedSlotId = newSlot.id;
+    redrawCustomCanvas();
+    updateCustomSlotList();
+}
+
+function addFullCoverSlot() {
+    if (!customUploadedImage) return;
+    pushCustomHistory();
+    const newSlot = { id: customNextSlotId++, x: 0, y: 0, w: customTemplateW, h: customTemplateH, image: null };
     customSlots.push(newSlot);
     customSelectedSlotId = newSlot.id;
     redrawCustomCanvas();
