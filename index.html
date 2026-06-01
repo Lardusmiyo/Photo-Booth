@@ -221,7 +221,7 @@ canvas.main-workspace {
     <div class="booth-screen active" id="screen-1">
         <h2 class="screen-title">Choose Your Layout</h2>
         <div class="screen-subtitle">Pick your frame shape and number of photos</div>
-        <div class="scroll-grid-wrapper">
+        <div class="scroll-grid-wrapper" id="layoutGrid">
             <div class="template-card selected" onclick="pickLayoutSchema(1, this)"><canvas id="thumb-1" class="thumb-canvas" width="50" height="75"></canvas><span class="title-label">Quad Grid</span><span class="count-badge">4 Photos</span></div>
             <div class="template-card" onclick="pickLayoutSchema(2, this)"><canvas id="thumb-2" class="thumb-canvas" width="50" height="150"></canvas><span class="title-label">3-Photo Strip</span><span class="count-badge">3 Photos</span></div>
             <div class="template-card" onclick="pickLayoutSchema(3, this)"><canvas id="thumb-3" class="thumb-canvas" width="50" height="175"></canvas><span class="title-label">4-Photo Strip</span><span class="count-badge">4 Photos</span></div>
@@ -402,7 +402,7 @@ canvas.main-workspace {
         </div>
 
         <div class="custom-draw-area" id="customDrawArea">
-            <div class="custom-draw-label">📐 Click &amp; drag to draw photo slots on your design:</div>
+            <div class="custom-draw-label">📐 Click a slot to select it, then move or resize. Add slots with the button below:</div>
             <div class="custom-draw-canvas-wrap">
                 <canvas id="customDrawCanvas"></canvas>
             </div>
@@ -410,8 +410,20 @@ canvas.main-workspace {
 
         <div class="custom-slot-list" id="customSlotList"></div>
 
-        <div class="custom-actions-row">
-            <button class="btn-custom-clear" onclick="clearCustomSlots()">🗑 Clear Slots</button>
+        <div class="custom-actions-row" style="flex-wrap:wrap; gap:6px;">
+            <button class="btn-custom-clear" id="customUndoBtn" onclick="undoCustom()"
+                style="display:none; background:#1e1a2a; border-color:#a78bfa; color:#a78bfa;">↩ Undo</button>
+            <button class="btn-custom-clear" id="customRedoBtn" onclick="redoCustom()"
+                style="display:none; background:#1e1a2a; border-color:#a78bfa; color:#a78bfa;">↪ Redo</button>
+            <button class="btn-custom-clear" onclick="addCustomSlotByButton()"
+                style="background:#1a2f1a; border-color:#34c759; color:#34c759;">＋ Add Photo Slot</button>
+            <button class="btn-custom-clear" id="customDuplicateBtn" onclick="duplicateCustomSlot()"
+                style="display:none; background:#1a2638; border-color:#007aff; color:#007aff;">⧉ Duplicate</button>
+            <button class="btn-custom-clear" id="customSnapBtn" onclick="toggleCustomSnap()"
+                title="Snap to grid (20px)"
+                style="background:#252632; border-color:#363646; color:#71717a;">⊞ Snap</button>
+            <button class="btn-custom-clear" onclick="clearCustomSlots()"
+                style="margin-left:auto;">🗑 Clear All</button>
         </div>
 
         <div id="customNameRow" style="display:none; margin-bottom:12px;">
@@ -1685,6 +1697,75 @@ let customNextSlotId = 1;
 let customLayoutCounter = 100;
 let customSelectedSlotId = null;
 let customDragOp = null; // {type:"move"|"resize"|"draw", handle, slotId, startPos, origSlot}
+let customSnapEnabled = false;
+const CUSTOM_GRID = 20;
+
+function snapG(v) { return customSnapEnabled ? Math.round(v / CUSTOM_GRID) * CUSTOM_GRID : Math.round(v); }
+
+function toggleCustomSnap() {
+    customSnapEnabled = !customSnapEnabled;
+    const btn = document.getElementById("customSnapBtn");
+    if (btn) {
+        btn.style.background = customSnapEnabled ? "#1a2f1a" : "#252632";
+        btn.style.borderColor = customSnapEnabled ? "#34c759" : "#363646";
+        btn.style.color = customSnapEnabled ? "#34c759" : "#71717a";
+        btn.textContent = customSnapEnabled ? "⊞ Snap ON" : "⊞ Snap";
+    }
+    redrawCustomCanvas();
+}
+
+let customHistory = [];
+let customRedoStack = [];
+
+function pushCustomHistory() {
+    customHistory.push(JSON.stringify(customSlots));
+    if (customHistory.length > 50) customHistory.shift();
+    customRedoStack = [];
+    updateCustomUndoRedoBtns();
+}
+
+function undoCustom() {
+    if (customHistory.length === 0) return;
+    customRedoStack.push(JSON.stringify(customSlots));
+    customSlots = JSON.parse(customHistory.pop());
+    customSelectedSlotId = null;
+    customDragOp = null;
+    redrawCustomCanvas();
+    updateCustomSlotList();
+    updateCustomUndoRedoBtns();
+}
+
+function redoCustom() {
+    if (customRedoStack.length === 0) return;
+    customHistory.push(JSON.stringify(customSlots));
+    customSlots = JSON.parse(customRedoStack.pop());
+    customSelectedSlotId = null;
+    customDragOp = null;
+    redrawCustomCanvas();
+    updateCustomSlotList();
+    updateCustomUndoRedoBtns();
+}
+
+function updateCustomUndoRedoBtns() {
+    const u = document.getElementById("customUndoBtn");
+    const r = document.getElementById("customRedoBtn");
+    if (u) u.style.display = customHistory.length > 0 ? "block" : "none";
+    if (r) r.style.display = customRedoStack.length > 0 ? "block" : "none";
+}
+
+function addCustomSlotByButton() {
+    if (!customUploadedImage) return;
+    pushCustomHistory();
+    const sw = snapG(Math.round(customTemplateW / 3));
+    const sh = snapG(Math.round(customTemplateH / 3));
+    const sx = snapG(Math.round((customTemplateW - sw) / 2));
+    const sy = snapG(Math.round((customTemplateH - sh) / 2));
+    const newSlot = { id: customNextSlotId++, x: sx, y: sy, w: sw, h: sh, image: null };
+    customSlots.push(newSlot);
+    customSelectedSlotId = newSlot.id;
+    redrawCustomCanvas();
+    updateCustomSlotList();
+}
 
 function openCustomLayoutModal() {
     document.getElementById("customLayoutModal").classList.add("open");
@@ -1716,6 +1797,8 @@ function loadCustomImage(img) {
     customNextSlotId = 1;
     customSelectedSlotId = null;
     customDragOp = null;
+    customHistory = [];
+    customRedoStack = [];
 
     const cvs = document.getElementById("customDrawCanvas");
     const displayW = Math.min(360, window.innerWidth - 64);
@@ -1792,7 +1875,7 @@ function getHitTarget(pos) {
             return { type: "move", slotId: s.id };
         }
     }
-    return { type: "draw" };
+    return { type: "empty" };
 }
 
 function getResizeCursor(handle) {
@@ -1806,6 +1889,21 @@ function redrawCustomCanvas() {
     const ctx = cvs.getContext("2d");
     ctx.clearRect(0, 0, cvs.width, cvs.height);
     ctx.drawImage(customUploadedImage, 0, 0, cvs.width, cvs.height);
+
+    if (customSnapEnabled) {
+        const gx = CUSTOM_GRID * (cvs.width / customTemplateW);
+        const gy = CUSTOM_GRID * (cvs.height / customTemplateH);
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,0.13)";
+        ctx.lineWidth = 0.5;
+        for (let x = gx; x < cvs.width; x += gx) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, cvs.height); ctx.stroke();
+        }
+        for (let y = gy; y < cvs.height; y += gy) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(cvs.width, y); ctx.stroke();
+        }
+        ctx.restore();
+    }
 
     customSlots.forEach((slot, idx) => {
         const { dx, dy, dw, dh } = getSlotDisplayRect(slot);
@@ -1839,17 +1937,6 @@ function redrawCustomCanvas() {
         }
     });
 
-    // Draw in-progress new slot
-    if (customDragOp && customDragOp.type === "draw" && customCurrentRect) {
-        const r = customCurrentRect;
-        ctx.fillStyle = "rgba(52,199,89,0.2)";
-        ctx.fillRect(r.x, r.y, r.w, r.h);
-        ctx.strokeStyle = "#34c759";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([5, 4]);
-        ctx.strokeRect(r.x, r.y, r.w, r.h);
-        ctx.setLineDash([]);
-    }
 }
 
 let customListenersAttached = false;
@@ -1866,23 +1953,23 @@ function setupCustomDrawListeners() {
 
         if (hit.type === "resize") {
             const slot = customSlots.find(s => s.id === hit.slotId);
+            pushCustomHistory();
             customDragOp = { type: "resize", handle: hit.handle, slotId: hit.slotId,
                 startPos: pos, origSlot: { ...slot } };
         } else if (hit.type === "move") {
             const slot = customSlots.find(s => s.id === hit.slotId);
             const { dx, dy } = getSlotDisplayRect(slot);
+            pushCustomHistory();
             customSelectedSlotId = hit.slotId;
             customDragOp = { type: "move", slotId: hit.slotId,
                 startPos: pos, origSlot: { ...slot },
                 offsetX: pos.x - dx, offsetY: pos.y - dy };
             updateCustomSlotList();
         } else {
-            // Draw new slot
             customSelectedSlotId = null;
-            customDragOp = { type: "draw" };
-            customStartX = pos.x; customStartY = pos.y;
-            customCurrentRect = { x: pos.x, y: pos.y, w: 0, h: 0 };
             updateCustomSlotList();
+            redrawCustomCanvas();
+            return;
         }
         redrawCustomCanvas();
     }
@@ -1894,18 +1981,13 @@ function setupCustomDrawListeners() {
         const cvs = document.getElementById("customDrawCanvas");
         const sX = cvs.width / customTemplateW, sY = cvs.height / customTemplateH;
 
-        if (customDragOp.type === "draw") {
-            customCurrentRect = {
-                x: Math.min(customStartX, pos.x), y: Math.min(customStartY, pos.y),
-                w: Math.abs(pos.x - customStartX), h: Math.abs(pos.y - customStartY)
-            };
-        } else if (customDragOp.type === "move") {
+        if (customDragOp.type === "move") {
             const slot = customSlots.find(s => s.id === customDragOp.slotId);
             if (!slot) return;
             const newDx = pos.x - customDragOp.offsetX;
             const newDy = pos.y - customDragOp.offsetY;
-            slot.x = Math.round(Math.max(0, Math.min(newDx / sX, customTemplateW - slot.w)));
-            slot.y = Math.round(Math.max(0, Math.min(newDy / sY, customTemplateH - slot.h)));
+            slot.x = snapG(Math.max(0, Math.min(newDx / sX, customTemplateW - slot.w)));
+            slot.y = snapG(Math.max(0, Math.min(newDy / sY, customTemplateH - slot.h)));
         } else if (customDragOp.type === "resize") {
             const slot = customSlots.find(s => s.id === customDragOp.slotId);
             if (!slot) return;
@@ -1914,21 +1996,21 @@ function setupCustomDrawListeners() {
             const dy = (pos.y - customDragOp.startPos.y) / sY;
             const h = customDragOp.handle;
             let nx = orig.x, ny = orig.y, nw = orig.w, nh = orig.h;
-            if (h.includes("e")) nw = Math.max(20, orig.w + dx);
-            if (h.includes("s")) nh = Math.max(20, orig.h + dy);
-            if (h.includes("w")) { nx = Math.min(orig.x + dx, orig.x + orig.w - 20); nw = orig.w - (nx - orig.x); }
-            if (h.includes("n")) { ny = Math.min(orig.y + dy, orig.y + orig.h - 20); nh = orig.h - (ny - orig.y); }
-            slot.x = Math.round(Math.max(0, nx));
-            slot.y = Math.round(Math.max(0, ny));
-            slot.w = Math.round(Math.min(nw, customTemplateW - slot.x));
-            slot.h = Math.round(Math.min(nh, customTemplateH - slot.y));
+            if (h.includes("e")) nw = Math.max(CUSTOM_GRID, orig.w + dx);
+            if (h.includes("s")) nh = Math.max(CUSTOM_GRID, orig.h + dy);
+            if (h.includes("w")) { nx = Math.min(orig.x + dx, orig.x + orig.w - CUSTOM_GRID); nw = orig.w - (nx - orig.x); }
+            if (h.includes("n")) { ny = Math.min(orig.y + dy, orig.y + orig.h - CUSTOM_GRID); nh = orig.h - (ny - orig.y); }
+            slot.x = snapG(Math.max(0, nx));
+            slot.y = snapG(Math.max(0, ny));
+            slot.w = snapG(Math.min(nw, customTemplateW - slot.x));
+            slot.h = snapG(Math.min(nh, customTemplateH - slot.y));
         }
 
         // Update cursor based on hover
-        if (!customDragOp || customDragOp.type === "draw") {
+        if (!customDragOp) {
             const hit = getHitTarget(pos);
             cvs.style.cursor = hit.type === "resize" ? getResizeCursor(hit.handle)
-                : hit.type === "move" ? "move" : "crosshair";
+                : hit.type === "move" ? "move" : "default";
         }
         redrawCustomCanvas();
     }
@@ -1936,21 +2018,6 @@ function setupCustomDrawListeners() {
     function onEnd(e) {
         if (!customDragOp) return;
         e.preventDefault();
-        if (customDragOp.type === "draw" && customCurrentRect) {
-            if (customCurrentRect.w > 10 && customCurrentRect.h > 10) {
-                const tl = displayToTemplate(customCurrentRect.x, customCurrentRect.y);
-                const br = displayToTemplate(customCurrentRect.x + customCurrentRect.w, customCurrentRect.y + customCurrentRect.h);
-                const newSlot = {
-                    id: customNextSlotId++,
-                    x: Math.round(tl.x), y: Math.round(tl.y),
-                    w: Math.round(br.x - tl.x), h: Math.round(br.y - tl.y),
-                    image: null
-                };
-                customSlots.push(newSlot);
-                customSelectedSlotId = newSlot.id;
-            }
-            customCurrentRect = null;
-        }
         customDragOp = null;
         redrawCustomCanvas();
         updateCustomSlotList();
@@ -1974,6 +2041,7 @@ function setupCustomDrawListeners() {
 }
 
 function deleteCustomSlot(id) {
+    pushCustomHistory();
     customSlots = customSlots.filter(s => s.id !== id);
     if (customSelectedSlotId === id) customSelectedSlotId = null;
     redrawCustomCanvas();
@@ -1981,6 +2049,7 @@ function deleteCustomSlot(id) {
 }
 
 function clearCustomSlots() {
+    pushCustomHistory();
     customSlots = [];
     customNextSlotId = 1;
     customSelectedSlotId = null;
@@ -1994,9 +2063,32 @@ function selectCustomSlot(id) {
     updateCustomSlotList();
 }
 
+function duplicateCustomSlot() {
+    if (customSelectedSlotId === null) return;
+    const orig = customSlots.find(s => s.id === customSelectedSlotId);
+    if (!orig) return;
+    pushCustomHistory();
+    const offset = 20;
+    const newSlot = {
+        id: customNextSlotId++,
+        x: Math.min(orig.x + offset, customTemplateW - orig.w),
+        y: Math.min(orig.y + offset, customTemplateH - orig.h),
+        w: orig.w,
+        h: orig.h,
+        image: null
+    };
+    customSlots.push(newSlot);
+    customSelectedSlotId = newSlot.id;
+    redrawCustomCanvas();
+    updateCustomSlotList();
+}
+
 function updateCustomSlotList() {
     const list = document.getElementById("customSlotList");
     const nameRow = document.getElementById("customNameRow");
+    const dupBtn = document.getElementById("customDuplicateBtn");
+    if (dupBtn) dupBtn.style.display = (customSelectedSlotId !== null && customSlots.length > 0) ? "block" : "none";
+
     if (customSlots.length === 0) {
         list.innerHTML = `<div style="color:#555;font-size:11px;text-align:center;padding:10px;">No slots yet — click &amp; drag on the image to draw photo slots. Click an existing slot to select and move/resize it.</div>`;
         if (nameRow) nameRow.style.display = "none";
@@ -2018,7 +2110,7 @@ function buildAndInsertCustomCard(id, autoSelect) {
     const config = templateRegistry[id];
     const thumbH = Math.round(50 * (config.h / config.w));
     const displayLabel = config.label && config.label !== "Custom" ? config.label : "Custom";
-    const grid = document.querySelector(".scroll-grid-wrapper");
+    const grid = document.getElementById("layoutGrid");
     const addCard = document.getElementById("addCustomCard");
 
     const newCard = document.createElement("div");
@@ -2202,6 +2294,8 @@ function saveCustomLayout() {
     customUploadedImage = null;
     customSelectedSlotId = null;
     customDragOp = null;
+    customHistory = [];
+    customRedoStack = [];
     customListenersAttached = false;
 
     closeCustomLayoutModal();
