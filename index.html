@@ -362,6 +362,11 @@ canvas.main-workspace {
                     style="flex:1; accent-color:#007aff; cursor:pointer; height:4px;">
                 <span id="stickerStrokeWidthLabel" style="font-size:12px; font-weight:700; color:#007aff; min-width:28px; text-align:right;">0</span>
             </div>
+                <!-- CENTER SNAP TOGGLE -->
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:6px;">
+                    <span style="font-size:11px; color:#8a8d9a; font-weight:700;">CENTER SNAP</span>
+                    <button id="centerSnapToggleBtn" onclick="toggleCenterSnap()" style="padding:3px 12px; border-radius:12px; border:none; cursor:pointer; font-size:11px; font-weight:700; background:#007aff; color:#fff;">ON</button>
+                </div>
             <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
                 <div style="display:flex; align-items:center; gap:6px; background:#252632; border:1px solid #323446; border-radius:6px; padding:6px 10px; flex-shrink:0;">
                     <label style="font-size:11px; color:#8a8d9a; font-weight:700; white-space:nowrap;">Size</label>
@@ -496,6 +501,7 @@ let undoHistoryTimelineStack = [];
 let redoHistoryTimelineStack = [];
 let showCenterGuideX = false;
 let showCenterGuideY = false;
+let centerSnapEnabled = true;
 
 const templateRegistry = {
     1: { w: 500, h: 650, frames: [
@@ -644,6 +650,17 @@ function applyLiveFontSize(val) {
         activeTargetSticker.boxH = (size * 1.2) + 12;
         triggerLiveOverlayRedraw();
     }
+}
+
+function toggleCenterSnap() {
+    centerSnapEnabled = !centerSnapEnabled;
+    let btn = document.getElementById('centerSnapToggleBtn');
+    if (btn) {
+        btn.textContent = centerSnapEnabled ? 'ON' : 'OFF';
+        btn.style.background = centerSnapEnabled ? '#007aff' : '#636366';
+    }
+    if (!centerSnapEnabled) { showCenterGuideX = false; showCenterGuideY = false; }
+    triggerLiveOverlayRedraw();
 }
 
 function applyLiveStroke(val) {
@@ -1142,11 +1159,16 @@ function setupStickerDragAndTransformListeners() {
             activeTargetSticker.x = coords.x - mouseOffsetPointer.x;
             activeTargetSticker.y = coords.y - mouseOffsetPointer.y;
             const cfg = templateRegistry[selectedLayoutId];
-            const snapThreshold = 12;
-            showCenterGuideX = Math.abs(activeTargetSticker.x - cfg.w / 2) < snapThreshold;
-            showCenterGuideY = Math.abs(activeTargetSticker.y - cfg.h / 2) < snapThreshold;
-            if (showCenterGuideX) activeTargetSticker.x = cfg.w / 2;
-            if (showCenterGuideY) activeTargetSticker.y = cfg.h / 2;
+            if (centerSnapEnabled) {
+                const snapThreshold = 12;
+                showCenterGuideX = Math.abs(activeTargetSticker.x - cfg.w / 2) < snapThreshold;
+                showCenterGuideY = Math.abs(activeTargetSticker.y - cfg.h / 2) < snapThreshold;
+                if (showCenterGuideX) activeTargetSticker.x = cfg.w / 2;
+                if (showCenterGuideY) activeTargetSticker.y = cfg.h / 2;
+            } else {
+                showCenterGuideX = false;
+                showCenterGuideY = false;
+            }
         } 
         else if (transformActionNode === "rotate") {
             let currentMouseAngle = Math.atan2(coords.y - activeTargetSticker.y, coords.x - activeTargetSticker.x);
