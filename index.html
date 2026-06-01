@@ -145,6 +145,66 @@ canvas.main-workspace {
 .btn-next:disabled { background: #1f1f26; color: #555; cursor: not-allowed; }
 .btn-download { background: #34c759; color: white; width: 100%; font-size: 14px; font-weight: 700; padding: 14px; }
 
+.add-custom-card {
+    background: #141419; border: 2px dashed #007aff; border-radius: 10px; padding: 8px;
+    text-align: center; width: 90px; flex-shrink: 0; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.15s ease; min-height: 90px;
+}
+.add-custom-card:hover { background: #1a2638; border-color: #34c759; }
+.add-custom-card .plus-big { font-size: 26px; line-height: 1; color: #007aff; }
+.add-custom-card .add-label { font-size: 10px; font-weight: 700; color: #007aff; }
+.add-custom-card .add-sub { font-size: 9px; color: #34c759; font-weight: 700; background: rgba(52,199,89,0.12); padding: 2px 6px; border-radius: 4px; }
+
+.custom-modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 2000;
+    background: rgba(0,0,0,0.92); overflow-y: auto; padding: 16px;
+    align-items: flex-start; justify-content: center;
+}
+.custom-modal-overlay.open { display: flex; }
+.custom-modal-box {
+    background: #141419; border: 1px solid #272732; border-radius: 16px;
+    padding: 16px; width: 100%; max-width: 430px; margin: auto;
+}
+.custom-modal-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.custom-modal-sub { font-size: 11px; color: #a1a1aa; margin-bottom: 14px; }
+.custom-upload-area {
+    border: 2px dashed #363646; border-radius: 12px; padding: 28px 16px;
+    text-align: center; cursor: pointer; display: flex; flex-direction: column;
+    align-items: center; gap: 8px; margin-bottom: 14px; transition: all 0.15s;
+}
+.custom-upload-area:hover { border-color: #007aff; background: #1a2638; }
+.custom-upload-icon { font-size: 32px; }
+.custom-upload-label { font-size: 13px; color: #d4d4d8; font-weight: 600; }
+.custom-upload-hint { font-size: 10px; color: #71717a; }
+.custom-draw-area { display: none; margin-bottom: 14px; }
+.custom-draw-label { font-size: 11px; color: #a1a1aa; margin-bottom: 8px; font-weight: 600; }
+.custom-draw-canvas-wrap {
+    border-radius: 10px; overflow: hidden; border: 2px solid #363646;
+    cursor: crosshair; display: block; touch-action: none;
+}
+#customDrawCanvas { display: block; max-width: 100%; }
+.custom-slot-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; min-height: 36px; }
+.custom-actions-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.btn-custom-clear {
+    flex: 1; padding: 9px; background: #252632; border: 1px solid #323446; color: #e4e4e7;
+    border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.btn-custom-clear:hover { background: #2d2f3f; }
+.btn-custom-save {
+    flex: 2; padding: 9px; background: #007aff; border: none; color: white;
+    border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: none;
+}
+.btn-custom-save:hover { background: #0069d9; }
+.btn-custom-close {
+    width: 100%; padding: 10px; background: #252632; border: 1px solid #323446;
+    color: #a1a1aa; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.custom-tip-box {
+    background: #1a2638; border: 1px solid #1e3a5f; border-radius: 8px; padding: 10px 12px;
+    font-size: 10px; color: #7eb3f5; line-height: 1.5; margin-bottom: 14px;
+}
+
 </style>
 </head>
 <body>
@@ -174,6 +234,11 @@ canvas.main-workspace {
             <div class="template-card" onclick="pickLayoutSchema(10, this)"><canvas id="thumb-10" class="thumb-canvas" width="50" height="85"></canvas><span class="title-label">6-Grid Poster</span><span class="count-badge">6 Photos</span></div>
             <div class="template-card" onclick="pickLayoutSchema(11, this)"><canvas id="thumb-11" class="thumb-canvas" width="50" height="190"></canvas><span class="title-label">Mega 5-Strip</span><span class="count-badge">5 Photos</span></div>
             <div class="template-card" onclick="pickLayoutSchema(12, this)"><canvas id="thumb-12" class="thumb-canvas" width="50" height="75"></canvas><span class="title-label">Polaroid Showcase</span><span class="count-badge">1 Photo</span></div>
+            <div class="add-custom-card" id="addCustomCard" onclick="openCustomLayoutModal()">
+                <div class="plus-big">＋</div>
+                <div class="add-label">Custom</div>
+                <div class="add-sub">Canva</div>
+            </div>
         </div>
         <div class="nav-footer"><button class="btn-nav btn-next" onclick="navigateToScreen(2)">Next: Take Photos ➔</button></div>
     </div>
@@ -319,6 +384,49 @@ canvas.main-workspace {
     </div>
 </div>
 
+<!-- CUSTOM LAYOUT MODAL -->
+<div class="custom-modal-overlay" id="customLayoutModal">
+    <div class="custom-modal-box">
+        <div class="custom-modal-title">✦ Custom Canva Layout</div>
+        <div class="custom-modal-sub">Upload your Canva design, then draw photo slot boxes on it</div>
+
+        <div class="custom-tip-box">
+            💡 <strong>Tip:</strong> In Canva, delete the photo placeholders so those areas become transparent, then export as <strong>PNG</strong>. Upload here, draw boxes over where photos should appear, then save.
+        </div>
+
+        <div class="custom-upload-area" id="customUploadArea" onclick="document.getElementById('customFileInput').click()">
+            <div class="custom-upload-icon">🖼️</div>
+            <div class="custom-upload-label">Tap to upload your Canva PNG</div>
+            <div class="custom-upload-hint">PNG recommended (supports transparency)</div>
+            <input type="file" id="customFileInput" accept="image/*" style="display:none" onchange="handleCustomFileInput(event)">
+        </div>
+
+        <div class="custom-draw-area" id="customDrawArea">
+            <div class="custom-draw-label">📐 Click &amp; drag to draw photo slots on your design:</div>
+            <div class="custom-draw-canvas-wrap">
+                <canvas id="customDrawCanvas"></canvas>
+            </div>
+        </div>
+
+        <div class="custom-slot-list" id="customSlotList"></div>
+
+        <div class="custom-actions-row">
+            <button class="btn-custom-clear" onclick="clearCustomSlots()">🗑 Clear Slots</button>
+        </div>
+
+        <div id="customNameRow" style="display:none; margin-bottom:12px;">
+            <label style="display:block;font-size:11px;color:#a1a1aa;font-weight:700;margin-bottom:6px;">LAYOUT NAME</label>
+            <input type="text" id="customLayoutNameInput" maxlength="20" placeholder="e.g. Wedding Frame, Birthday Booth…"
+                style="width:100%;background:#252632;border:1px solid #323446;border-radius:8px;color:#fff;padding:10px 12px;font-size:13px;outline:none;box-sizing:border-box;"
+                onfocus="this.style.borderColor='#007aff'" onblur="this.style.borderColor='#323446'">
+        </div>
+
+        <button class="btn-custom-save" id="customSaveBtn" onclick="saveCustomLayout()">✓ Save Layout</button>
+
+        <button class="btn-custom-close" onclick="closeCustomLayoutModal()">✕ Cancel</button>
+    </div>
+</div>
+
 <script>
 const video = document.getElementById("boothVideo");
 const step3Canvas = document.getElementById("boothCanvasStep3Preview");
@@ -412,6 +520,7 @@ let currentFrameStructure = JSON.parse(JSON.stringify(templateRegistry[1].frames
 
 window.onload = function() {
     buildMiniLayoutPreviews();
+    restoreCustomLayouts();
     setupStickerDragAndTransformListeners();
     updateDropdownVisualStyles();
     setupTextInputLiveSyncListener();
@@ -1386,6 +1495,11 @@ function renderFrameFullEngine(targetCtx, structure, config, designName, isThumb
         targetCtx.shadowBlur = 0; // laging i-reset para sa susunod na loops
     });
 
+    // 3.5 CUSTOM CANVA OVERLAY (drawn on top of photos so the frame shows through)
+    if (config && config.customOverlayImage && config.customOverlayImage.complete && config.customOverlayImage.naturalWidth > 0) {
+        targetCtx.drawImage(config.customOverlayImage, 0, 0, canvasW, canvasH);
+    }
+
     // 4. STICKERS TEXT ENGINE (Para lang sa Main Active Canvas)
     if (!isThumb) {
         stickerTextList.forEach(stk => {
@@ -1559,6 +1673,540 @@ function drawLeafCluster(ctx, x, y, scale) {
     ctx.restore();
 }
 
+
+// ===================== CUSTOM LAYOUT BUILDER =====================
+let customUploadedImage = null;
+let customTemplateW = 0, customTemplateH = 0;
+let customSlots = [];
+let customDrawing = false;
+let customStartX = 0, customStartY = 0;
+let customCurrentRect = null;
+let customNextSlotId = 1;
+let customLayoutCounter = 100;
+let customSelectedSlotId = null;
+let customDragOp = null; // {type:"move"|"resize"|"draw", handle, slotId, startPos, origSlot}
+
+function openCustomLayoutModal() {
+    document.getElementById("customLayoutModal").classList.add("open");
+    setupCustomDrawListeners();
+}
+function closeCustomLayoutModal() {
+    document.getElementById("customLayoutModal").classList.remove("open");
+}
+
+function handleCustomFileInput(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => loadCustomImage(img);
+        img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function loadCustomImage(img) {
+    customUploadedImage = img;
+    const maxW = 600;
+    const sc = Math.min(1, maxW / img.width);
+    customTemplateW = Math.round(img.width * sc);
+    customTemplateH = Math.round(img.height * sc);
+    customSlots = [];
+    customNextSlotId = 1;
+    customSelectedSlotId = null;
+    customDragOp = null;
+
+    const cvs = document.getElementById("customDrawCanvas");
+    const displayW = Math.min(360, window.innerWidth - 64);
+    const displayH = Math.round(displayW * (img.height / img.width));
+    cvs.width = displayW;
+    cvs.height = displayH;
+    cvs.style.width = displayW + "px";
+    cvs.style.height = displayH + "px";
+    cvs.style.cursor = "crosshair";
+
+    document.getElementById("customDrawArea").style.display = "block";
+    document.getElementById("customUploadArea").style.display = "none";
+    document.getElementById("customSaveBtn").style.display = "block";
+    document.getElementById("customNameRow").style.display = "none";
+
+    redrawCustomCanvas();
+    updateCustomSlotList();
+}
+
+function getCustomCanvasPos(e) {
+    const cvs = document.getElementById("customDrawCanvas");
+    const rect = cvs.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+        x: (clientX - rect.left) * (cvs.width / rect.width),
+        y: (clientY - rect.top) * (cvs.height / rect.height)
+    };
+}
+
+function displayToTemplate(x, y) {
+    const cvs = document.getElementById("customDrawCanvas");
+    return {
+        x: x * (customTemplateW / cvs.width),
+        y: y * (customTemplateH / cvs.height)
+    };
+}
+
+const HANDLE_R = 7; // display-pixel radius for resize handles
+
+function getSlotDisplayRect(slot) {
+    const cvs = document.getElementById("customDrawCanvas");
+    const sX = cvs.width / customTemplateW, sY = cvs.height / customTemplateH;
+    return { dx: slot.x * sX, dy: slot.y * sY, dw: slot.w * sX, dh: slot.h * sY };
+}
+
+function getHandlePoints(dx, dy, dw, dh) {
+    return {
+        nw: [dx,       dy      ], n:  [dx+dw/2,  dy      ], ne: [dx+dw,    dy      ],
+        w:  [dx,       dy+dh/2 ],                            e:  [dx+dw,    dy+dh/2 ],
+        sw: [dx,       dy+dh   ], s:  [dx+dw/2,  dy+dh   ], se: [dx+dw,    dy+dh   ]
+    };
+}
+
+function getHitTarget(pos) {
+    // Check selected slot handles first
+    if (customSelectedSlotId !== null) {
+        const sel = customSlots.find(s => s.id === customSelectedSlotId);
+        if (sel) {
+            const { dx, dy, dw, dh } = getSlotDisplayRect(sel);
+            const handles = getHandlePoints(dx, dy, dw, dh);
+            for (const [handle, [hx, hy]] of Object.entries(handles)) {
+                if (Math.hypot(pos.x - hx, pos.y - hy) <= HANDLE_R + 3) {
+                    return { type: "resize", handle, slotId: sel.id };
+                }
+            }
+        }
+    }
+    // Check all slots for move hit
+    for (let i = customSlots.length - 1; i >= 0; i--) {
+        const s = customSlots[i];
+        const { dx, dy, dw, dh } = getSlotDisplayRect(s);
+        if (pos.x >= dx && pos.x <= dx + dw && pos.y >= dy && pos.y <= dy + dh) {
+            return { type: "move", slotId: s.id };
+        }
+    }
+    return { type: "draw" };
+}
+
+function getResizeCursor(handle) {
+    const map = { nw:"nw-resize", ne:"ne-resize", sw:"sw-resize", se:"se-resize", n:"n-resize", s:"s-resize", w:"w-resize", e:"e-resize" };
+    return map[handle] || "crosshair";
+}
+
+function redrawCustomCanvas() {
+    const cvs = document.getElementById("customDrawCanvas");
+    if (!cvs || !customUploadedImage) return;
+    const ctx = cvs.getContext("2d");
+    ctx.clearRect(0, 0, cvs.width, cvs.height);
+    ctx.drawImage(customUploadedImage, 0, 0, cvs.width, cvs.height);
+
+    customSlots.forEach((slot, idx) => {
+        const { dx, dy, dw, dh } = getSlotDisplayRect(slot);
+        const isSelected = slot.id === customSelectedSlotId;
+
+        ctx.fillStyle = isSelected ? "rgba(255,159,10,0.28)" : "rgba(0,122,255,0.22)";
+        ctx.fillRect(dx, dy, dw, dh);
+        ctx.strokeStyle = isSelected ? "#ff9f0a" : "#007aff";
+        ctx.lineWidth = isSelected ? 2.5 : 2;
+        ctx.strokeRect(dx, dy, dw, dh);
+
+        // Number label
+        ctx.fillStyle = "#fff";
+        ctx.font = `bold ${Math.max(11, Math.min(dh * 0.32, 26))}px sans-serif`;
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.shadowColor = "rgba(0,0,0,0.7)"; ctx.shadowBlur = 4;
+        ctx.fillText(idx + 1, dx + dw / 2, dy + dh / 2);
+        ctx.shadowBlur = 0;
+
+        // Draw resize handles for selected slot
+        if (isSelected) {
+            const handles = getHandlePoints(dx, dy, dw, dh);
+            Object.values(handles).forEach(([hx, hy]) => {
+                ctx.fillStyle = "#ff9f0a";
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.arc(hx, hy, HANDLE_R, 0, Math.PI * 2);
+                ctx.fill(); ctx.stroke();
+            });
+        }
+    });
+
+    // Draw in-progress new slot
+    if (customDragOp && customDragOp.type === "draw" && customCurrentRect) {
+        const r = customCurrentRect;
+        ctx.fillStyle = "rgba(52,199,89,0.2)";
+        ctx.fillRect(r.x, r.y, r.w, r.h);
+        ctx.strokeStyle = "#34c759";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 4]);
+        ctx.strokeRect(r.x, r.y, r.w, r.h);
+        ctx.setLineDash([]);
+    }
+}
+
+let customListenersAttached = false;
+function setupCustomDrawListeners() {
+    if (customListenersAttached) return;
+    customListenersAttached = true;
+    const cvs = document.getElementById("customDrawCanvas");
+
+    function onStart(e) {
+        if (!customUploadedImage) return;
+        e.preventDefault();
+        const pos = getCustomCanvasPos(e);
+        const hit = getHitTarget(pos);
+
+        if (hit.type === "resize") {
+            const slot = customSlots.find(s => s.id === hit.slotId);
+            customDragOp = { type: "resize", handle: hit.handle, slotId: hit.slotId,
+                startPos: pos, origSlot: { ...slot } };
+        } else if (hit.type === "move") {
+            const slot = customSlots.find(s => s.id === hit.slotId);
+            const { dx, dy } = getSlotDisplayRect(slot);
+            customSelectedSlotId = hit.slotId;
+            customDragOp = { type: "move", slotId: hit.slotId,
+                startPos: pos, origSlot: { ...slot },
+                offsetX: pos.x - dx, offsetY: pos.y - dy };
+            updateCustomSlotList();
+        } else {
+            // Draw new slot
+            customSelectedSlotId = null;
+            customDragOp = { type: "draw" };
+            customStartX = pos.x; customStartY = pos.y;
+            customCurrentRect = { x: pos.x, y: pos.y, w: 0, h: 0 };
+            updateCustomSlotList();
+        }
+        redrawCustomCanvas();
+    }
+
+    function onMove(e) {
+        if (!customDragOp) return;
+        e.preventDefault();
+        const pos = getCustomCanvasPos(e);
+        const cvs = document.getElementById("customDrawCanvas");
+        const sX = cvs.width / customTemplateW, sY = cvs.height / customTemplateH;
+
+        if (customDragOp.type === "draw") {
+            customCurrentRect = {
+                x: Math.min(customStartX, pos.x), y: Math.min(customStartY, pos.y),
+                w: Math.abs(pos.x - customStartX), h: Math.abs(pos.y - customStartY)
+            };
+        } else if (customDragOp.type === "move") {
+            const slot = customSlots.find(s => s.id === customDragOp.slotId);
+            if (!slot) return;
+            const newDx = pos.x - customDragOp.offsetX;
+            const newDy = pos.y - customDragOp.offsetY;
+            slot.x = Math.round(Math.max(0, Math.min(newDx / sX, customTemplateW - slot.w)));
+            slot.y = Math.round(Math.max(0, Math.min(newDy / sY, customTemplateH - slot.h)));
+        } else if (customDragOp.type === "resize") {
+            const slot = customSlots.find(s => s.id === customDragOp.slotId);
+            if (!slot) return;
+            const orig = customDragOp.origSlot;
+            const dx = (pos.x - customDragOp.startPos.x) / sX;
+            const dy = (pos.y - customDragOp.startPos.y) / sY;
+            const h = customDragOp.handle;
+            let nx = orig.x, ny = orig.y, nw = orig.w, nh = orig.h;
+            if (h.includes("e")) nw = Math.max(20, orig.w + dx);
+            if (h.includes("s")) nh = Math.max(20, orig.h + dy);
+            if (h.includes("w")) { nx = Math.min(orig.x + dx, orig.x + orig.w - 20); nw = orig.w - (nx - orig.x); }
+            if (h.includes("n")) { ny = Math.min(orig.y + dy, orig.y + orig.h - 20); nh = orig.h - (ny - orig.y); }
+            slot.x = Math.round(Math.max(0, nx));
+            slot.y = Math.round(Math.max(0, ny));
+            slot.w = Math.round(Math.min(nw, customTemplateW - slot.x));
+            slot.h = Math.round(Math.min(nh, customTemplateH - slot.y));
+        }
+
+        // Update cursor based on hover
+        if (!customDragOp || customDragOp.type === "draw") {
+            const hit = getHitTarget(pos);
+            cvs.style.cursor = hit.type === "resize" ? getResizeCursor(hit.handle)
+                : hit.type === "move" ? "move" : "crosshair";
+        }
+        redrawCustomCanvas();
+    }
+
+    function onEnd(e) {
+        if (!customDragOp) return;
+        e.preventDefault();
+        if (customDragOp.type === "draw" && customCurrentRect) {
+            if (customCurrentRect.w > 10 && customCurrentRect.h > 10) {
+                const tl = displayToTemplate(customCurrentRect.x, customCurrentRect.y);
+                const br = displayToTemplate(customCurrentRect.x + customCurrentRect.w, customCurrentRect.y + customCurrentRect.h);
+                const newSlot = {
+                    id: customNextSlotId++,
+                    x: Math.round(tl.x), y: Math.round(tl.y),
+                    w: Math.round(br.x - tl.x), h: Math.round(br.y - tl.y),
+                    image: null
+                };
+                customSlots.push(newSlot);
+                customSelectedSlotId = newSlot.id;
+            }
+            customCurrentRect = null;
+        }
+        customDragOp = null;
+        redrawCustomCanvas();
+        updateCustomSlotList();
+    }
+
+    function onHover(e) {
+        if (customDragOp) return;
+        const pos = getCustomCanvasPos(e);
+        const hit = getHitTarget(pos);
+        cvs.style.cursor = hit.type === "resize" ? getResizeCursor(hit.handle)
+            : hit.type === "move" ? "move" : "crosshair";
+    }
+
+    cvs.addEventListener("mousedown", onStart);
+    cvs.addEventListener("mousemove", onMove);
+    cvs.addEventListener("mousemove", onHover);
+    cvs.addEventListener("mouseup", onEnd);
+    cvs.addEventListener("touchstart", onStart, { passive: false });
+    cvs.addEventListener("touchmove", onMove, { passive: false });
+    cvs.addEventListener("touchend", onEnd, { passive: false });
+}
+
+function deleteCustomSlot(id) {
+    customSlots = customSlots.filter(s => s.id !== id);
+    if (customSelectedSlotId === id) customSelectedSlotId = null;
+    redrawCustomCanvas();
+    updateCustomSlotList();
+}
+
+function clearCustomSlots() {
+    customSlots = [];
+    customNextSlotId = 1;
+    customSelectedSlotId = null;
+    redrawCustomCanvas();
+    updateCustomSlotList();
+}
+
+function selectCustomSlot(id) {
+    customSelectedSlotId = (customSelectedSlotId === id) ? null : id;
+    redrawCustomCanvas();
+    updateCustomSlotList();
+}
+
+function updateCustomSlotList() {
+    const list = document.getElementById("customSlotList");
+    const nameRow = document.getElementById("customNameRow");
+    if (customSlots.length === 0) {
+        list.innerHTML = `<div style="color:#555;font-size:11px;text-align:center;padding:10px;">No slots yet — click &amp; drag on the image to draw photo slots. Click an existing slot to select and move/resize it.</div>`;
+        if (nameRow) nameRow.style.display = "none";
+        return;
+    }
+    if (nameRow) nameRow.style.display = "block";
+    list.innerHTML = customSlots.map((s, i) => {
+        const isSel = s.id === customSelectedSlotId;
+        return `<div onclick="selectCustomSlot(${s.id})"
+            style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:${isSel ? "#2a1f0a" : "#252632"};border:1px solid ${isSel ? "#ff9f0a" : "transparent"};border-radius:7px;font-size:11px;cursor:pointer;transition:all 0.1s;">
+            <span style="color:${isSel ? "#ff9f0a" : "#007aff"};font-weight:700;">📷 Slot ${i + 1}</span>
+            <span style="color:#71717a;">${s.w} × ${s.h}</span>
+            <button onclick="event.stopPropagation();deleteCustomSlot(${s.id})" style="background:#ef4444;border:none;color:#fff;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:10px;font-weight:700;">✕</button>
+        </div>`;
+    }).join("");
+}
+
+function buildAndInsertCustomCard(id, autoSelect) {
+    const config = templateRegistry[id];
+    const thumbH = Math.round(50 * (config.h / config.w));
+    const displayLabel = config.label && config.label !== "Custom" ? config.label : "Custom";
+    const grid = document.querySelector(".scroll-grid-wrapper");
+    const addCard = document.getElementById("addCustomCard");
+
+    const newCard = document.createElement("div");
+    newCard.className = "template-card";
+    newCard.id = `custom-card-${id}`;
+    newCard.style.position = "relative";
+    newCard.innerHTML = `
+        <canvas id="thumb-${id}" class="thumb-canvas" width="50" height="${thumbH}"></canvas>
+        <span class="title-label" id="custom-label-${id}" style="cursor:text;" title="Click ✏ to rename">${displayLabel}</span>
+        <span class="count-badge" style="background:rgba(52,199,89,0.15);color:#34c759;">${config.frames.length} Slots</span>
+        <button onclick="event.stopPropagation();startRenameCustomLayout(${id})" title="Rename"
+            style="position:absolute;top:4px;left:4px;background:#252632;border:1px solid #323446;color:#a1a1aa;border-radius:4px;width:16px;height:16px;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✏</button>
+        <button onclick="event.stopPropagation();deleteCustomLayout(${id})" title="Delete layout"
+            style="position:absolute;top:4px;right:4px;background:#ef4444;border:none;color:#fff;border-radius:4px;width:16px;height:16px;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button>
+    `;
+    newCard.onclick = () => {
+        document.querySelectorAll(".template-card,.add-custom-card").forEach(el => el.classList.remove("selected"));
+        newCard.classList.add("selected");
+        selectedLayoutId = id;
+        currentFrameStructure = JSON.parse(JSON.stringify(templateRegistry[id].frames));
+    };
+    grid.insertBefore(newCard, addCard);
+
+    config.customOverlayImage.onload = () => {
+        const tc = document.getElementById(`thumb-${id}`);
+        if (tc) renderFrameFullEngine(tc.getContext("2d"), config.frames, config, "classic", true);
+    };
+    if (config.customOverlayImage.complete && config.customOverlayImage.naturalWidth > 0) {
+        const tc = document.getElementById(`thumb-${id}`);
+        if (tc) renderFrameFullEngine(tc.getContext("2d"), config.frames, config, "classic", true);
+    }
+
+    if (autoSelect) {
+        document.querySelectorAll(".template-card,.add-custom-card").forEach(el => el.classList.remove("selected"));
+        newCard.classList.add("selected");
+        selectedLayoutId = id;
+        currentFrameStructure = JSON.parse(JSON.stringify(config.frames));
+    }
+}
+
+function startRenameCustomLayout(id) {
+    const labelEl = document.getElementById(`custom-label-${id}`);
+    if (!labelEl) return;
+    const currentName = labelEl.textContent.trim();
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = currentName;
+    input.maxLength = 20;
+    input.style.cssText = "width:100%;font-size:10px;font-weight:600;background:#252632;border:1px solid #007aff;border-radius:4px;color:#fff;padding:2px 4px;text-align:center;outline:none;box-sizing:border-box;";
+
+    labelEl.replaceWith(input);
+    input.select();
+
+    function applyRename() {
+        const newName = input.value.trim() || currentName;
+        templateRegistry[id].label = newName;
+        const span = document.createElement("span");
+        span.className = "title-label";
+        span.id = `custom-label-${id}`;
+        span.style.cursor = "text";
+        span.title = "Click ✏ to rename";
+        span.textContent = newName;
+        input.replaceWith(span);
+        persistCustomLayouts();
+    }
+
+    input.addEventListener("blur", applyRename);
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); input.blur(); }
+        if (e.key === "Escape") { input.value = currentName; input.blur(); }
+    });
+}
+
+function persistCustomLayouts() {
+    try {
+        const saved = [];
+        Object.keys(templateRegistry).forEach(key => {
+            const cfg = templateRegistry[key];
+            if (!cfg.isCustom) return;
+            const offCvs = document.createElement("canvas");
+            offCvs.width = cfg.w; offCvs.height = cfg.h;
+            offCvs.getContext("2d").drawImage(cfg.customOverlayImage, 0, 0, cfg.w, cfg.h);
+            saved.push({
+                id: parseInt(key),
+                w: cfg.w, h: cfg.h,
+                label: cfg.label || "Custom",
+                frames: cfg.frames.map(f => ({ id: f.id, x: f.x, y: f.y, w: f.w, h: f.h })),
+                overlayDataUrl: offCvs.toDataURL("image/png")
+            });
+        });
+        localStorage.setItem("photobooth_custom_layouts", JSON.stringify(saved));
+        localStorage.setItem("photobooth_layout_counter", String(customLayoutCounter));
+    } catch(e) {
+        console.warn("Could not save custom layouts:", e);
+        alert("Custom layout saved for this session, but could not be stored permanently (image may be too large for browser storage).");
+    }
+}
+
+function restoreCustomLayouts() {
+    try {
+        const counter = localStorage.getItem("photobooth_layout_counter");
+        if (counter) customLayoutCounter = Math.max(customLayoutCounter, parseInt(counter));
+
+        const raw = localStorage.getItem("photobooth_custom_layouts");
+        if (!raw) return;
+        const saved = JSON.parse(raw);
+        saved.forEach(entry => {
+            const overlayImg = new Image();
+            overlayImg.src = entry.overlayDataUrl;
+            templateRegistry[entry.id] = {
+                w: entry.w, h: entry.h,
+                frames: entry.frames.map(f => ({ ...f, image: null })),
+                label: entry.label || "Custom",
+                customOverlayImage: overlayImg,
+                isCustom: true
+            };
+            if (entry.id >= customLayoutCounter) customLayoutCounter = entry.id + 1;
+            buildAndInsertCustomCard(entry.id, false);
+        });
+    } catch(e) {
+        console.warn("Could not restore custom layouts:", e);
+    }
+}
+
+function deleteCustomLayout(id) {
+    if (!confirm("Delete this custom layout?")) return;
+    delete templateRegistry[id];
+    const card = document.getElementById(`custom-card-${id}`);
+    if (card) card.remove();
+    if (selectedLayoutId === id) {
+        selectedLayoutId = 1;
+        currentFrameStructure = JSON.parse(JSON.stringify(templateRegistry[1].frames));
+        const firstCard = document.querySelector(".template-card");
+        if (firstCard) firstCard.classList.add("selected");
+    }
+    persistCustomLayouts();
+}
+
+function saveCustomLayout() {
+    if (!customUploadedImage) { alert("Please upload a Canva PNG first."); return; }
+    if (customSlots.length === 0) { alert("Please draw at least one photo slot on the image."); return; }
+
+    const id = customLayoutCounter++;
+    const frames = customSlots.map((s, i) => ({
+        id: i + 1, x: s.x, y: s.y, w: s.w, h: s.h, image: null
+    }));
+
+    const offCvs = document.createElement("canvas");
+    offCvs.width = customTemplateW; offCvs.height = customTemplateH;
+    offCvs.getContext("2d").drawImage(customUploadedImage, 0, 0, customTemplateW, customTemplateH);
+    const overlayDataUrl = offCvs.toDataURL("image/png");
+    const overlayImg = new Image();
+    overlayImg.src = overlayDataUrl;
+
+    const nameInput = document.getElementById("customLayoutNameInput");
+    const chosenLabel = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : "Custom";
+
+    templateRegistry[id] = {
+        w: customTemplateW, h: customTemplateH,
+        frames: frames,
+        label: chosenLabel,
+        customOverlayImage: overlayImg,
+        isCustom: true
+    };
+
+    buildAndInsertCustomCard(id, true);
+
+    // Persist to localStorage so it survives page refresh
+    overlayImg.onload = () => persistCustomLayouts();
+    if (overlayImg.complete) persistCustomLayouts();
+
+    // Reset modal state
+    document.getElementById("customUploadArea").style.display = "flex";
+    document.getElementById("customDrawArea").style.display = "none";
+    document.getElementById("customSaveBtn").style.display = "none";
+    document.getElementById("customNameRow").style.display = "none";
+    document.getElementById("customFileInput").value = "";
+    if (nameInput) nameInput.value = "";
+    customSlots = [];
+    customUploadedImage = null;
+    customSelectedSlotId = null;
+    customDragOp = null;
+    customListenersAttached = false;
+
+    closeCustomLayoutModal();
+}
+// ===================== END CUSTOM LAYOUT BUILDER =====================
 
 </script>
 </body>
